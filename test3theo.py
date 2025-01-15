@@ -140,7 +140,7 @@ while True:
 
     elif state == "leaderboard":
         draw_leaderboard(lbd_menu)
-        cv2.imshow("Leaderboard", lbd_menu)
+        cv2.imshow("Menu", lbd_menu)
 
     elif state == "statistiques":
         draw_stat_menu(lbd_menu)
