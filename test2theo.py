@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 
 # Chemin vers l'image de fond
-background_path = "giphy.gif"
+background_path = "neuer_prime.jpg"
 
 # Chargement de l'image de fond
 background = cv2.imread(background_path)
