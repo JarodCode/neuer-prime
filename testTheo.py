@@ -26,7 +26,7 @@ def mouse_event(event, x, y, flags, param):
                 if label == "Jouer":
                     print("Lancer le jeu...")
                     # Lancer le script du jeu
-                    subprocess.Popen(["python3", "/home/theo.constantin01/IG3/FASE/neuer_prime/detection_main.py"])
+                    subprocess.Popen(["python3", "detection_main.py"])
                 elif label == "Quitter":
                     running = False
 
