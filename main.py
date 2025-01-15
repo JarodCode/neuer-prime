@@ -9,7 +9,7 @@ def main():
     WIDTH, HEIGHT = 1000, 600
 
     myTir = Tir()
-    myTir.panenka()
+    myTir.direct()
 
     # Création du ballon 
     balle = Ballon(sprite="ballon.png",

@@ -12,7 +12,7 @@ class Tir :
     coDepart = np.array([500, 300, -450])
 
     def panenka(self):
-        coArriveePanenka = np.array([800, 300, 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
+        coArriveePanenka = np.array([800, 100, 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
         
         interpX = [self.coDepart[0], (self.coDepart[0] + coArriveePanenka[0])/2, coArriveePanenka[0]]
         interpY = [self.coDepart[1], -60, coArriveePanenka[1]]      # Remplacer 200 par une valeure aléatoire cohérente (faire test)
