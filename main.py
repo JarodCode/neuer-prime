@@ -5,16 +5,17 @@ from Tir import Tir
 from Ballon import Ballon
 
 def main():
-    EPSILON = 30
+    EPSILON = 1
     WIDTH, HEIGHT = 1000, 600
 
     myTir = Tir()
+    myTir.panenka()
 
     # Création du ballon 
     balle = Ballon(sprite="ballon.png",
                    idPos=0,
-                   pos=(0,0,0),
-                   traj=myTir.panenka(),
+                   pos=(0,0),
+                   traj=myTir.traj,
                    rayon=50,
                    enContactGant=False)
     
@@ -29,12 +30,13 @@ def main():
         render.clear()
         render.add_layer(caneva)
         render.add_layer(balle.get_graphic(),balle.update())
+        print(balle.pos)
 
         output = render.get_image()
         cv2.imshow("Resultat", output)
 
         key = cv2.waitKey(EPSILON) & 0xFF
-        if key == ord('q') or key == 27:
+        if key == ord('q') or key == 27: 
             break
 
     cv2.destroyAllWindows()

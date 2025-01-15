@@ -15,16 +15,17 @@ class Ballon :
 
     #rafraichi l'image si la balle est en l'air, si elle a touché les gants ou si elle est rentrée dans les cages 
     def update(self):
-        if not self.enContactGant :
+        if not self.enContactGant and self.idPos<49:
             self.idPos += 1 
-            self.pos = (self.traj[0, self.idPos], self.traj[1, self.idPos], self.traj[2, self.idPos])
+            self.pos = (int(self.traj[0, self.idPos]), int(self.traj[1, self.idPos]))
+            return self.pos
             # Changer le sprite 
-        elif self.pos[3] > self.posFinal[3] :
-            pass
-            # Le but est marqué 
-        else :
-            pass
-            # Le ballon est arrété 
+        # elif self.pos[2] > self.posFinal[2] :
+        #     pass
+        #     print("BUUUUUUT!!!!!!")
+        # else :
+        #     pass
+        #     print("MAIS QUEL ARRET!!!!!") 
     
     def get_graphic(self):
         img = Graphic(cv2.imread(self.sprite, cv2.IMREAD_UNCHANGED))

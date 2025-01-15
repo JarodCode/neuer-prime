@@ -6,33 +6,37 @@ import scipy as sns
 
 class Tir :
 
-    def _init_(self):
-        self.traj = np.zeros([3, 500])
+    def __init__(self):
+        self.traj = np.zeros([2, 50])
 
-    coDepart = np.array([0, 0, -450])
+    coDepart = np.array([500, 300, -450])
 
     def panenka(self):
-        coArriveePanenka = np.array([0, 0, 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
+        coArriveePanenka = np.array([800, 300, 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
         
-        interpX = [self.coDepart[2], (self.coDepart[2] + coArriveePanenka[2])/2, coArriveePanenka[2]]
-        interpY = [self.coDepart[1], 200, coArriveePanenka[1]]      # Remplacer 200 par une valeure aléatoire cohérente (faire test)
+        interpX = [self.coDepart[0], (self.coDepart[0] + coArriveePanenka[0])/2, coArriveePanenka[0]]
+        interpY = [self.coDepart[1], -60, coArriveePanenka[1]]      # Remplacer 200 par une valeure aléatoire cohérente (faire test)
         interp = sns.interpolate.CubicSpline(interpX, interpY)
         
-        traj = np.zeros([3, 500])                   # ar une valeur aléatoire entre la valeur max - un peu pour viser que le haut et le max
+        traj = np.zeros([3, 50])                   # ar une valeur aléatoire entre la valeur max - un peu pour viser que le haut et le max
         traj[0, :] = np.linspace(self.coDepart[0], coArriveePanenka[0], traj.shape[1])
-        traj[1, :] = np.linspace(self.coDepart[1], coArriveePanenka[1], traj.shape[1])
-        traj[1, :] = interp(traj[1, :])
+        traj[1, :] = interp(np.linspace(self.coDepart[1], coArriveePanenka[1], traj.shape[1]))
         traj[2, :] = np.linspace(self.coDepart[2], coArriveePanenka[2], traj.shape[1]) #surement changer ca pour que ça soit juste une valeure scalaire(entre 1 et 2 par exemple et augmenter à chaque fois faut voir)
+
+        import matplotlib.pyplot as plt
+        plt.plot(traj[0, :], traj[1, :], label="Trajectoire interpolée")
+        plt.scatter(interpX, interpY, color='red', label="Points de contrôle")
+        plt.legend()
+        plt.show()
 
         self.traj = traj
 
     def direct(self):
-        coArriveeDirect = np.array([0, 0, -450])          # Remplacer les 0 par des valeurs aléatoires, prendre en compte le rayon du BALLON
-
-        traj = np.zeros([3, 500])                   # comme c'est coup direct ça peut prendre tout l'écran
+        coArriveeDirect = np.array([np.random.uniform(55, 945), np.random.uniform(55, 545)])          # Remplacer les 0 par des valeurs aléatoires, prendre en compte le rayon du BALLON
+        traj = np.zeros([2, 50])                   # comme c'est coup direct ça peut prendre tout l'écran
         traj[0, :] = np.linspace(self.coDepart[0], coArriveeDirect[0], traj.shape[1])
         traj[1, :] = np.linspace(self.coDepart[1], coArriveeDirect[1], traj.shape[1])
-        traj[2, :] = np.linspace(self.coDepart[2], coArriveeDirect[2], traj.shape[1])
+        # traj[2, :] = np.linspace(self.coDepart[2], coArriveeDirect[2], traj.shape[1])
 
         self.traj = traj
 
@@ -77,5 +81,6 @@ class Tir :
         self.traj = traj
 
 
-
+myTir = Tir()
+myTir.panenka()
 
