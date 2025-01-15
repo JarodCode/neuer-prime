@@ -16,10 +16,13 @@ cyan = (255, 255, 0)      # Cyan vif, pour des éléments dynamiques
 yellow = (0, 215, 255)    # Jaune doré (Gold), lumineux et accrocheur
 
 #buttons coordinates : [min x, max x, min y, max y]
-xy_jouer = [300, 500, 200, 260]
-xy_leaderboard = [250, 550, 300, 360]
-xy_quitter = [300, 500, 400, 460]
+#main menu
+xy_jouer = [300, 500, 100, 160]
+xy_leaderboard = [250, 550, 200, 260]
+xy_quitter = [300, 500, 300, 360]
+#leaderboard menu
 xy_retour_lbd = [0, 200, 540, 600]
+xy_stat_lbd = [550, 800, 540, 600]
 
 # Chemin vers le GIF animé
 background_path = "neuer-frimpong.gif"
@@ -31,6 +34,11 @@ frames = [cv2.cvtColor(np.array(frame.convert("RGB")), cv2.COLOR_RGB2BGR) for fr
 # Redimensionnement des frames si nécessaire
 window_width, window_height = 800, 600  # Taille de la fenêtre
 frames = [cv2.resize(frame, (window_width, window_height)) for frame in frames]
+
+img_main_path = "fond_main.jpg"
+background_main = cv2.imread(img_main_path)
+background_main = cv2.resize(background_main, (window_width, window_height))
+
 
 img_lbd_path = "neuer_prime.jpg"
 background_lbd = cv2.imread(img_lbd_path)
@@ -62,32 +70,53 @@ def mouse_event(event, x, y, flags, param):
             if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
                 print("Retour au menu principal")
                 state = "main_menu"
+            if xy_stat_lbd[0] <= x <= xy_stat_lbd[1] and xy_stat_lbd[2] <= y <= xy_stat_lbd[3]:     #"statistiques" button
+                print("Affichage des statistiques")
+                state = "statistiques"
+
+        #if in "statistiques" 
+        elif state == "statistiques" : 
+            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
+                print("Retour au leaderboard")
+                state = "leaderboard"
 
         
 
 # Ajouter les boutons par-dessus l'image de fond
-def draw_main_menu(img):
-    
+def draw_main_menu(img):    
     
     # Dessiner le bouton "Jouer"
     cv2.rectangle(img, (xy_jouer[0], xy_jouer[2]), (xy_jouer[1], xy_jouer[3]), blue, -1)  
-    cv2.putText(img, "JOUER", (350, 240), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    cv2.putText(img, "JOUER", (350, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
     # Dessiner le bouton "Leaderboard"
     cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), orange, -1)  
-    cv2.putText(img, "LEADERBOARD", (285, 340), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    cv2.putText(img, "LEADERBOARD", (285, 240), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
     # Dessiner le bouton "Quitter"
     cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), red, -1) 
-    cv2.putText(img, "QUITTER", (332, 440), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    cv2.putText(img, "QUITTER", (332, 340), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
 
 def draw_leaderboard(img):
-    
-    cv2.putText(img, 'LEADERBOARD', (285, 60), cv2.FONT_HERSHEY_COMPLEX, 1, black, 2)
+    #leaderboard menu title
+    cv2.putText(img, 'LEADERBOARD', (285, 60), cv2.FONT_HERSHEY_COMPLEX, 1, yellow, 2)
     
     #draw return button
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
     cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+
+    #draw "statistique" button
+    cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), green, -1)  
+    cv2.putText(img, "STATISTIQUES", (562, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+
+def draw_stat_menu(img):
+    # title
+    cv2.putText(img, 'STATISTIQUES', (283, 60), cv2.FONT_HERSHEY_COMPLEX, 1, yellow, 2)
+
+    #draw return button
+    cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
+    cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+
 
 # Affichage du menu
 cv2.namedWindow("Menu")
@@ -100,17 +129,23 @@ while True:
     frame_index = (frame_index + 1) % len(frames)
 
     # Créer une copie de la frame pour chaque itération
-    menu = background.copy()
+    menu = background.copy()    #gif
+    main_menu = background_main.copy()
     lbd_menu = background_lbd.copy()
 
     #draw buttons 
     if state == "main_menu":
-        draw_main_menu(menu)
-        cv2.imshow("Menu", menu)
+        draw_main_menu(main_menu)
+        cv2.imshow("Menu", main_menu)
 
     elif state == "leaderboard":
         draw_leaderboard(lbd_menu)
+        cv2.imshow("Leaderboard", lbd_menu)
+
+    elif state == "statistiques":
+        draw_stat_menu(lbd_menu)
         cv2.imshow("Menu", lbd_menu)
+
 
     # Attendre une touche pour quitter
     if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
