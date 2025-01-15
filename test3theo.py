@@ -1,18 +1,18 @@
 import cv2
 import numpy as np
+from PIL import Image, ImageSequence
 import subprocess
 
-# Chemin vers l'image de fond
+# Chemin vers le GIF animé
 background_path = "giphy.gif"
 
-# Chargement de l'image de fond
-background = cv2.imread(background_path)
-if background is None:
-    raise FileNotFoundError(f"Erreur : Impossible de charger l'image de fond '{background_path}'.")
+# Chargement du GIF animé avec Pillow
+gif = Image.open(background_path)
+frames = [cv2.cvtColor(np.array(frame.convert("RGB")), cv2.COLOR_RGB2BGR) for frame in ImageSequence.Iterator(gif)]
 
-# Redimensionnement de l'image de fond si nécessaire
+# Redimensionnement des frames si nécessaire
 window_width, window_height = 800, 600  # Taille de la fenêtre
-background = cv2.resize(background, (window_width, window_height))
+frames = [cv2.resize(frame, (window_width, window_height)) for frame in frames]
 
 # Fonction pour détecter les clics sur les boutons
 def mouse_event(event, x, y, flags, param):
@@ -40,8 +40,13 @@ def draw_buttons(img):
 cv2.namedWindow("Menu")
 cv2.setMouseCallback("Menu", mouse_event)
 
+frame_index = 0
 while True:
-    # Créer une copie de l'image de fond pour chaque itération
+    # Sélectionner la frame courante
+    background = frames[frame_index]
+    frame_index = (frame_index + 1) % len(frames)
+
+    # Créer une copie de la frame pour chaque itération
     menu = background.copy()
 
     # Dessiner les boutons
@@ -51,7 +56,7 @@ while True:
     cv2.imshow("Menu", menu)
 
     # Attendre une touche pour quitter
-    if cv2.waitKey(1) & 0xFF == 27:  # Touche Échap
+    if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
         break
 
 cv2.destroyAllWindows()
