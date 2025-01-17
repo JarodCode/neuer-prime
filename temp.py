@@ -9,7 +9,18 @@ def main():
     WIDTH, HEIGHT = 1000, 600
 
     myTir = Tir()
-    myTir.panenkaDroite()
+
+
+    al = np.random.choice([1,2,3]) 
+    if al == 1 :
+        myTir.panenkaGauche()
+    elif al == 2:
+        myTir.panenkaDroite()
+    else: 
+        myTir.direct()
+    
+    print(al)
+
 
     # Création du ballon 
     balle = Ballon(sprite="ballon2.jpeg",
@@ -18,12 +29,11 @@ def main():
                    traj=myTir.traj,
                    rayon=50,
                    enContactGant=False)
-    
-    cap = cv2.VideoCapture(0)
 
     render = SceneRender((WIDTH, HEIGHT))
 
     while True:
+        print(al)
         caneva = Graphic((WIDTH, HEIGHT))
         caneva.fill((255, 255, 255))  # Remplir le canevas avec un fond blanc
 
