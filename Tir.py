@@ -9,10 +9,10 @@ class Tir :
     def __init__(self):
         self.traj = np.zeros([2, 50])
 
-    coDepart = np.array([500, 300, -450])
+    coDepart = np.array([500, 550, -450])
 
-    def panenka(self):
-        coArriveePanenka = np.array([800, 100, 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
+    def panenkaDroite(self):
+        coArriveePanenka = np.array([np.random.uniform(500 , 950), np.random.uniform(50, 200), 450])          # Remplacer le premier 0 par une valeurs aléatoires entre les valeurs max et le deuxième
         
         interpX = [self.coDepart[0], (self.coDepart[0] + coArriveePanenka[0])/2, coArriveePanenka[0]]
         interpY = [self.coDepart[1], -np.random.uniform(500, 600), coArriveePanenka[1]]      # Remplacer 200 par une valeure aléatoire cohérente (faire test)
@@ -75,6 +75,5 @@ class Tir :
         self.traj = traj
 
 
-myTir = Tir()
-myTir.panenka()
+
 
