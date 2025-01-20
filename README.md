@@ -1,10 +1,41 @@
-# neuer-prime
+### neuer-prime
 
-on joue un gardien de foot et on doit arrêter des tirs de penalty
-il y a plusieurs tireurs de peno : Mbappé, Zidane, cr7, Haaland, Neymar
-la caméra est à la pov du gardien 
-on contrôle les mains du gardien, qui bougent en fonction des nôtres
-on détecte nos mains avec un point puis on crée une hitbox
-la partie continue tant qu'on arrête le ballon, ce qui augmente aussi le score 
-on recupère des statistiques : score, les endroits oû le joueur a le plus de facilité d'arrêter le ballon
-  
+## Description 
+
+Le joueur incarne un gardien de but en vue subjective (POV) et doit arrêter des
+tirs de penalty effectués par des stars du football. Les mains du gardien sont contrôlées par
+les mouvements réels du joueur par tracking.
+
+## Prérequis 
+
+- cv2
+- numpy
+- mediapipe
+- subprocess
+
+## Installation 
+
+Après avoir cloner le projet.  
+Créer un environnement virtuel :
+~~~
+python -m venv env
+source env/bin/active
+~~~
+Installer les dépendances :
+~~~
+pip install -r requirements.txt
+~~~
+
+## Utilisation
+
+~~~
+python main.py
+~~~
+
+Le main est un menu, sur lequel il possible de choisir dans quelle section on veut aller.  
+Le boutton "Jouer" envoie sur le jeu,  
+Une fois sur le jeu, pour quitter l'interface, il faut appuyer sur la **touche "q"**.  
+Le boutton "Leaderboard" envoie sur le classement des meilleurs joueurs en fonction de leur score.  
+A partir du Leaderboard, il y a un boutton "Statistiques"  
+qui envoie sur un menu où des statistiques seront affichées (ex hitmap).  
+Pour quitter le menu il suffit d'appuyer sur le boutton "Quitter" ou la touche "Echap".
