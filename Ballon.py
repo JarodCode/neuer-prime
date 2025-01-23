@@ -15,10 +15,11 @@ class Ballon :
 
     #rafraichi l'image si la balle est en l'air, si elle a touché les gants ou si elle est rentrée dans les cages 
     def update(self):
-        if not self.enContactGant and self.idPos<49:
-            self.idPos += 1 
+        if not self.enContactGant and self.idPos < self.traj.shape[1] - 1:  # Vérifie si idPos est valide
+            self.idPos += 1
             self.pos = (int(self.traj[0, self.idPos]), int(self.traj[1, self.idPos]))
             return self.pos
+
             # Changer le sprite 
         # elif self.pos[2] > self.posFinal[2] :
         #     pass
