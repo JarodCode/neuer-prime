@@ -1,20 +1,69 @@
-from typing import List, Tuple
+import os.path
+from typing import List, Tuple, Union
 
 import cv2
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+Cv2Image = np.ndarray
+Size = Tuple[int, int]
 class Graphic:
-    def __init__(self, image):
+    """
+    A versatile image manipulation class that supports various image operations using the OpenCV library. It provides functionality to handle and manipulate images including resizing, cropping, drawing shapes, text, and applying a variety of filters and transformations to adjust the visual appearance of images.
+
+    Attributes:
+        image (np.ndarray): The current working image that is being manipulated.
+        _initial_image (np.ndarray): The original image stored for reset purposes.
+
+    Methods:
+        Various methods for image manipulation such as drawing, transforming, and applying effects are provided, which facilitate complex graphic operations suited for GUIs, games, or image processing applications.
+    """
+
+    def __init__(self, image: Union[Cv2Image, Size, 'Graphic'] = (0, 0)):
         """
-        Initialize the Drawing object with an image.
-        :param image: numpy array representing the image (height, width, channels)
+        Initializes a new Graphic object with either an image or a size.
+        :param image: A numpy array representing an image or a tuple for size (width, height)
         """
+        if isinstance(image, Graphic):
+            self.image = image.image
+            self._initial_image = image._initial_image
+            return
         self.image = None
+        self._initial_image = None
         self.reset_image(image)
 
-    def reset_image(self, image):
-        if isinstance(image, np.ndarray):
+    def width(self):
+        """
+        Returns the width of the image.
+        :return: The width of the image as an integer
+        """
+        return self.image.shape[1]
+
+    def height(self):
+        """
+        Returns the height of the image.
+        :return: The height of the image as an integer
+        """
+        return self.image.shape[0]
+
+    def reset_image(self, image: Union[Cv2Image, Size] = None):
+        """
+        Resets the image to a given image or reverts to the initial image if none is provided.
+        :param image: The new image or dimensions to reset to (default None)
+        :return: Self for chaining
+        """
+        if image is not None:
+            if isinstance(image, Cv2Image):
+                self._initial_image = image.copy()
+            else:
+                self._initial_image = image
+        else:
+            if isinstance(image, Cv2Image):
+                image = self._initial_image.copy()
+            else:
+                image = self._initial_image
+
+        if isinstance(image, Cv2Image):
             if image.shape[2] == 3:
                 self.image = cv2.cvtColor(image.copy(), cv2.COLOR_BGR2BGRA)
                 self.image[:,:,3] = 255
@@ -25,28 +74,44 @@ class Graphic:
             self.image[:,:,3] = 0
         return self
 
-    def add_mask(self, mask_image: np.ndarray, use_values_between_0_and_1: bool = False):
+    def add_mask(self, mask_image: Cv2Image, use_values_between_0_and_1: bool = False):
+        """
+        Adds a mask to the image, altering its transparency.
+        :param mask_image: A mask image array
+        :param use_values_between_0_and_1: If true, mask values should be between 0 and 1, otherwise values should be between 0 and 255 (default False)
+        """
         if len(mask_image.shape) == 3:
             mask_image = np.reshape(mask_image, (mask_image.shape[0], mask_image.shape[1]))
         if use_values_between_0_and_1:
             mask_image = np.clip(mask_image * 255, 0, 255).astype(np.uint8)
         self.image[:,:,3] = (255 - mask_image)
+        return self
 
     def _blend_with_alpha(self, position, color, alpha):
         """
-        Apply alpha blending at a specific position.
-        :param position: Tuple or array of coordinates (x, y).
-        :param color: Tuple (B, G, R) - color to apply.
-        :param alpha: Float - transparency level (0 to 1).
+        Blends a color into the image at the specified position with alpha transparency.
+        :param position: Pixel position for blending
+        :param color: Color value to blend
+        :param alpha: Transparency level (default 1.0)
         """
         overlay = self.image.copy()
         overlay[position] = color
         cv2.addWeighted(src1=overlay, alpha=alpha, src2=self.image, beta=1 - alpha, gamma=0, dst=self.image)
 
     def get_image(self):
+        """
+        Returns the current image.
+        :return: The current image as a numpy array
+        """
         return self.image
 
     def fill(self, color, alpha=1.0):
+        """
+        Fills the entire image with a specified color and transparency.
+        :param color: Color to fill the image with
+        :param alpha: Transparency level (default 1.0)
+        :return: Self for chaining
+        """
         temp_image = self.image.copy()
         if len(color) == 3: color = (*color, 255)
         temp_image[:, :] = color
@@ -55,35 +120,29 @@ class Graphic:
 
     def draw_rectangle(self, start_point, end_point, color, thickness=2, alpha=1.0):
         """
-        Draw a rectangle on the image with transparency.
-        :param start_point: Tuple (x, y) - the starting point of the rectangle.
-        :param end_point: Tuple (x, y) - the ending point of the rectangle.
-        :param color: Tuple (B, G, R) - the color of the rectangle.
-        :param thickness: Integer - thickness of the rectangle edges.
-        :param alpha: Float - transparency of the rectangle.
+        Draws a rectangle on the image.
+        :param start_point: Top-left corner of the rectangle
+        :param end_point: Bottom-right corner of the rectangle
+        :param color: Rectangle color
+        :param thickness: Line thickness (default 2)
+        :param alpha: Transparency level (default 1.0)
+        :return: Self for chaining
         """
-        # if thickness < 0 and False:
-        #     # Filled rectangle
-        #     top_left = (min(start_point[0], end_point[0]), min(start_point[1], end_point[1]))
-        #     bottom_right = (max(start_point[0], end_point[0]), max(start_point[1], end_point[1]))
-        #     for y in range(top_left[1], bottom_right[1]):
-        #         for x in range(top_left[0], bottom_right[0]):
-        #             self._blend_with_alpha((y, x), color, alpha)
-        # else:
         temp_image = self.image.copy()
         if len(color) == 3: color = (*color, 255)
         cv2.rectangle(temp_image, start_point, end_point, color, thickness)
         cv2.addWeighted(temp_image, alpha, self.image, 1 - alpha, 0, self.image)
         return self
 
-    def draw_circle(self, center, radius, color, thickness=2, alpha=1.0):
+    def draw_circle(self, center, radius, color, thickness=2, alpha =1.0):
         """
-        Draw a circle on the image with transparency.
-        :param center: Tuple (x, y) - the center of the circle.
-        :param radius: Integer - the radius of the circle.
-        :param color: Tuple (B, G, R) - the color of the circle.
-        :param thickness: Integer - thickness of the circle edge. Use -1 for filled circle.
-        :param alpha: Float - transparency of the circle.
+        Draws a circle on the image.
+        :param center: Center of the circle
+        :param radius: Radius of the circle
+        :param color: Circle color
+        :param thickness: Line thickness (default 2)
+        :param alpha: Transparency level (default 1.0)
+        :return: Self for chaining
         """
         temp_image = self.image.copy()
         if len(color) == 3: color = (*color, 255)
@@ -91,14 +150,18 @@ class Graphic:
         cv2.addWeighted(temp_image, alpha, self.image, 1 - alpha, 0, self.image)
         return self
 
-    def draw_text(self, text, position, font_path, font_size, color, alpha = 1.0):
+    def draw_text(self, text, position, font_path, font_size, color, alpha = 1.0, center = False, box_size = (0, 0)):
         """
-        Draw text on the image using a custom TTF font.
-        :param text: String - the text to draw.
-        :param position: Tuple (x, y) - where to put the text on the image.
-        :param font_path: String - path to the .ttf font file.
-        :param font_size: Integer - size of the font.
-        :param color: Tuple (R, G, B) - color of the text (Pillow uses RGB).
+        Draws text on the image.
+        :param text: Text to draw
+        :param position: Position to start the text
+        :param font_path: Path to the font file
+        :param font_size: Size of the font
+        :param color: Text color
+        :param alpha: Transparency level (default 1.0)
+        :param center: Whether to center text (default False)
+        :param box_size: Box size for centering text (default (0, 0))
+        :return: Self for chaining
         """
         # Convert BGR (OpenCV) image to RGB (Pillow)
         temp_image = self.image.copy()
@@ -106,7 +169,14 @@ class Graphic:
         rgb_image = cv2.cvtColor(temp_image, cv2.COLOR_BGRA2RGBA)
         pil_image = Image.fromarray(rgb_image)
         draw = ImageDraw.Draw(pil_image)
+        if not font_path.endswith(".ttf"):
+            font_path += ".ttf"
+        if not os.path.exists(font_path):
+            font_path = os.path.dirname(__file__) + "/Fonts/" + font_path
         font = ImageFont.truetype(font_path, font_size)
+        if center:
+            _, _, w, h = draw.textbbox((0, 0), text, font=font)
+            position = (int(position[0] + (box_size[0]/2 - w/2)), int(position[1] + (box_size[1]/2 - h/2)))
         draw.text(position, text, font=font, fill=color)
 
         temp_image = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGBA2BGRA)
@@ -116,12 +186,14 @@ class Graphic:
 
     def draw_arrow(self, start_point, end_point, color, thickness=2, tip_length=0.1, alpha = 1.0):
         """
-        Draw an arrow on the image.
-        :param start_point: Tuple (x, y) - the starting point of the arrow.
-        :param end_point: Tuple (x, y) - the ending point of the arrow.
-        :param color: Tuple (B, G, R) - the color of the arrow.
-        :param thickness: Integer - thickness of the arrow line.
-        :param tip_length: Float - relative length of the arrow tip.
+        Draws an arrow on the image.
+        :param start_point: Starting point of the arrow
+        :param end_point: Ending point of the arrow
+        :param color: Arrow color
+        :param thickness: Line thickness (default 2)
+        :param tip_length: Length of the arrow tip (default 0.1)
+        :param alpha: Transparency level (default 1.0)
+        :return: Self for chaining
         """
         temp_image = self.image.copy()
         if len(color) == 3: color = (*color, 255)
@@ -132,28 +204,31 @@ class Graphic:
 
     def resize(self, new_size, interpolation=cv2.INTER_LINEAR):
         """
-        Resize the image to a new size.
-        :param new_size: Tuple (new_width, new_height)
-        :param interpolation: Interpolation method
+        Resizes the image to a new size.
+        :param new_size: New dimensions (width, height)
+        :param interpolation: Interpolation method (default cv2.INTER_LINEAR)
+        :return: Self for chaining
         """
         self.image = cv2.resize(self.image, new_size, interpolation=interpolation)
         return self
 
     def crop(self, start_point, end_point):
         """
-        Crop the image to the specified rectangle.
-        :param start_point: Tuple (x1, y1) - the top-left coordinate of the rectangle
-        :param end_point: Tuple (x2, y2) - the bottom-right coordinate of the rectangle
+        Crops the image to a specified rectangle.
+        :param start_point: Top-left corner of the crop rectangle
+        :param end_point: Bottom-right corner of the crop rectangle
+        :return: Self for chaining
         """
         self.image = self.image[start_point[1]:end_point[1], start_point[0]:end_point[0]]
         return self
 
     def rotate(self, angle, center=None, scale=1.0):
         """
-        Rotate the image around a center point at a given angle.
-        :param angle: float - angle of rotation in degrees
-        :param center: Tuple (x, y) - the center of rotation, defaults to the center of the image
-        :param scale: float - scale factor
+        Rotates the image around a specified center and angle.
+        :param angle: Rotation angle in degrees
+        :param center: Center point for rotation (default None means center of image)
+        :param scale: Scale factor (default 1.0)
+        :return: Self for chaining
         """
         (h, w) = self.image.shape[:2]
         if center is None:
@@ -162,38 +237,50 @@ class Graphic:
         self.image = cv2.warpAffine(self.image, M, (w, h))
         return self
 
-    def apply_perspective_transform(self, src_points, dst_points, size):
+    def get_box(self):
         """
-        Apply a perspective transformation to the image.
-        :param src_points: List of four source points [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
-        :param dst_points: List of four destination points after transformation
-        :param size: Tuple (width, height) of the resulting image
+        Returns the corners of the image (top-left, top-right, bottom-right, bottom-left)
+        :return: List of corner coordinates as a numpy array
+        """
+        return np.array([[0, 0], [1, 0], [1, 1], [0, 1]]) * np.array([self.width(), self.height()])
+
+    def apply_perspective_transform(self, src_points, dst_points, size, interpolation = None):
+        """
+        Applies a perspective transform to the image.
+        :param src_points: Source points for the transform
+        :param dst_points: Destination points for the transform
+        :param size: Size of the output image
+        :param interpolation: Interpolation method (default None)
+        :return: Self for chaining
         """
         matrix = cv2.getPerspectiveTransform(np.array(src_points, dtype='float32'),
                                              np.array(dst_points, dtype='float32'))
-        self.image = cv2.warpPerspective(self.image, matrix, size)
+        self.image = cv2.warpPerspective(self.image, matrix, size, flags=interpolation)
         return self
 
     def adjust_brightness(self, value):
         """
-        Adjust the brightness of the image.
-        :param value: Integer, increase or decrease brightness by this value
+        Adjusts the brightness of the image.
+        :param value: Value to add to the brightness
+        :return: Self for chaining
         """
         self.image = cv2.add(self.image, np.array([value, value, value]))
         return self
 
     def adjust_contrast(self, factor):
         """
-        Adjust the contrast of the image.
-        :param factor: Float, factor by which to multiply the contrast
+        Adjusts the contrast of the image.
+        :param factor: Multiplicative factor for contrast adjustment
+        :return: Self for chaining
         """
         self.image = cv2.multiply(self.image, np.array([factor, factor, factor]))
         return self
 
     def adjust_saturation(self, factor):
         """
-        Adjust the saturation of the image.
-        :param factor: Float, factor by which to multiply the saturation
+        Adjusts the saturation of the image.
+        :param factor: Multiplicative factor for saturation adjustment
+        :return: Self for chaining
         """
         hsv_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2HSV)
         hsv_image[..., 1] = cv2.multiply(hsv_image[..., 1], np.array([factor]))
@@ -202,24 +289,35 @@ class Graphic:
 
     def convert_color_space(self, conversion_code):
         """
-        Convert the image to a different color space using a conversion code.
-        :param conversion_code: OpenCV color conversion code (e.g., cv2.COLOR_BGR2GRAY)
+        Converts the image to a different color space.
+        :param conversion_code: OpenCV color conversion code
+        :return: Self for chaining
         """
         self.image = cv2.cvtColor(self.image, conversion_code)
+        return self
+
+    def convert_to_grayscale(self):
+        """
+        Converts the image to a grayscale version
+        :return: Self for chaining
+        """
+        self.image = cv2.cvtColor(cv2.cvtColor(self.image, cv2.COLOR_RGBA2GRAY), cv2.COLOR_GRAY2BGRA)
         return self
 
 
     def apply_blur(self, kernel_size=(5, 5)):
         """
-        Apply a simple Gaussian blur to the image.
-        :param kernel_size: Tuple indicating the size of the Gaussian kernel
+        Applies a Gaussian blur to the image.
+        :param kernel_size: Size of the blur kernel (default (5, 5))
+        :return: Self for chaining
         """
         self.image = cv2.GaussianBlur(self.image, kernel_size, 0)
         return self
 
     def apply_sharpen(self):
         """
-        Apply a sharpening filter to the image.
+        Applies a sharpening effect to the image using a predefined kernel.
+        :return: Self for chaining
         """
         kernel = np.array([[-1, -1, -1],
                            [-1, 9, -1],
@@ -229,24 +327,27 @@ class Graphic:
 
     def apply_edge_detection(self):
         """
-        Detect edges in the image using the Canny edge detector.
+        Applies an edge detection filter to the image (Canny).
+        :return: Self for chaining
         """
-        self.image = cv2.Canny(self.image, 100, 200)
+        self.image = cv2.cvtColor(cv2.Canny(self.image, 100, 200), cv2.COLOR_GRAY2BGRA)
         return self
 
-    def apply_custom_filter(self, kernel):
+    def apply_custom_filter(self, kernel: np.ndarray):
         """
-        Apply a custom kernel for various effects.
-        :param kernel: A numpy array representing the filter kernel
+        Applies a custom convolution filter to the image.
+        :param kernel: The convolution kernel as a numpy array
+        :return: Self for chaining
         """
         self.image = cv2.filter2D(self.image, -1, kernel)
         return self
 
     def apply_sketch_effect(self):
         """
-        Convert the image to a pencil sketch-like effect.
+        Applies a sketch effect to the image by inverting and blurring.
+        :return: Self for chaining
         """
-        gray_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.cvtColor(self.image, cv2.COLOR_BGRA2GRAY)
         inverted_img = cv2.bitwise_not(gray_image)
         blurred_img = cv2.GaussianBlur(inverted_img, (21, 21), sigmaX=0, sigmaY=0)
         inverted_blur = cv2.bitwise_not(blurred_img)
@@ -255,27 +356,24 @@ class Graphic:
 
     def apply_cartoon_effect(self):
         """
-        Apply a cartoon effect to the image by enhancing edges and reducing the color palette.
+        Applies a cartoon effect by combining edge detection and bilateral filtering.
+        :return: Self for chaining
         """
-        # Step 1: Apply a bilateral filter to reduce the color palette
         alpha = self.image[:,:,3]
         color = cv2.bilateralFilter(cv2.cvtColor(self.image, cv2.COLOR_BGRA2BGR), d=9, sigmaColor=75, sigmaSpace=75)
-        # Step 2: Convert to grayscale and apply median blur
         gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         blur = cv2.medianBlur(gray, 7)
-        # Step 3: Create an edge mask using adaptive thresholding
         edges = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
                                       cv2.THRESH_BINARY, blockSize=9, C=2)
-        # Step 4: Combine edges with the color image
         self.image = cv2.cvtColor(cv2.bitwise_and(color, color, mask=edges), cv2.COLOR_BGR2BGRA)
         self.image[:,:,3] = alpha
         return self
 
     def apply_painting_effect(self):
         """
-        Apply a painting effect using a combination of filters.
+        Applies a painting effect using stylization.
+        :return: Self for chaining
         """
-        # Step 1: Use a bilateral filter to simulate a watercolor effect
         alpha = self.image[:,:,3]
         self.image = cv2.cvtColor(cv2.stylization(cv2.cvtColor(self.image, cv2.COLOR_BGRA2BGR), sigma_s=60, sigma_r=0.6), cv2.COLOR_BGR2BGRA)
         self.image[:,:,3] = alpha
@@ -284,109 +382,195 @@ class Graphic:
 
 
 class SceneRender:
+    """
+    A class designed to manage and composite multiple Graphic objects into a single rendered scene. This is useful for creating complex visual compositions where multiple layers (images) need to be managed and rendered onto a single canvas. Each layer can have individual properties like position and transparency which are considered during the compositing process.
+
+    Attributes:
+        base_size (Tuple[int, int]): The width and height of the base canvas where the layers will be composited.
+        layers (List[Tuple[Graphic, Tuple[int, int], float]]): A list storing layers as tuples containing a Graphic object, its position, and its transparency.
+
+    Methods:
+        add_layer: Adds a new layer to the scene.
+        get_image: Composites all the layers and returns the final image.
+        clear: Clears all layers from the scene.
+    """
+
     def __init__(self, base_size):
         """
-        Initialize the LayerManager with a specified base canvas size.
-        :param base_size: Tuple (height, width), the size of the base canvas.
+        Initializes a new SceneRender object with a base canvas size.
+        :param base_size: Tuple indicating the width and height of the base canvas
         """
         self.base_size = base_size
         self.layers: List[Tuple[Graphic, Tuple[int, int], float]] = []  # Stores layers as tuples of (image, position, alpha)
 
     def add_layer(self, image, position=(0, 0), alpha = 1.0):
         """
-        Add a new layer with a specified position on the base canvas.
-        :param image: numpy array representing the image (layer) to be added.
-        :param position: Tuple (x, y), the top-left corner where the layer will be placed.
+        Adds a graphic layer to the scene.
+        :param image: A Graphic object or an image to be wrapped as a Graphic
+        :param position: Position of the layer (default (0, 0))
+        :param alpha: Transparency of the layer (default 1.0)
         """
         self.layers.append((image if isinstance(image, Graphic) else Graphic(image), position, alpha))
 
     def get_image(self):
         """
-        Merge all layers onto a base canvas and return the final image.
-        :return: numpy array, the merged final image.
+        Composites all layers into a final rendered image.
+        :return: The final composited image as a numpy array
         """
-
-        # Create a blank canvas
         final_image = np.zeros((self.base_size[1], self.base_size[0], 3), dtype=np.uint8)
 
-        for imageManager, position, alphaCoef in self.layers:
-            image = imageManager.get_image()
+        for imageManager, position, alpha_coef in self.layers:
+            image = imageManager.get_image().copy()
+
+            # Starting positions may be negative
+            start_x = int(position[0])
+            start_y = int(position[1])
+
+            # Adjust start_x and start_y if they are negative
+            if start_x < 0:
+                image = image[:, -start_x:]  # Crop the image from the left
+                start_x = 0
+            if start_y < 0:
+                image = image[-start_y:, :]  # Crop the image from the top
+                start_y = 0
+
+            if start_x >= self.base_size[0]:
+                continue
+            if start_y >= self.base_size[1]:
+                continue
+
             # Determine the region of the canvas that the layer will occupy
-            y_start = position[1]
-            y_end = y_start + image.shape[0]
-            x_start = position[0]
-            x_end = x_start + image.shape[1]
+            end_x = start_x + image.shape[1]
+            end_y = start_y + image.shape[0]
 
-            # Check boundaries and adjust if necessary
-            if x_end > self.base_size[0]:
-                x_end = self.base_size[0]
-                image = image[:, :x_end - x_start]
-            if y_end > self.base_size[1]:
-                y_end = self.base_size[1]
-                image = image[:y_end - y_start, :]
+            # Ensure the image does not go out of the canvas boundaries
+            if end_x >= self.base_size[0]:
+                image = image[:, :(self.base_size[0] - start_x)]
+                end_x = self.base_size[0]
+            if end_y >= self.base_size[1]:
+                image = image[:(self.base_size[1] - start_y), :]
+                end_y = self.base_size[1]
 
-            # Place the image on the final canvas
-            alpha = alphaCoef * np.reshape(image[:,:,3].astype(float), (image.shape[0], image.shape[1], 1)) / 255.0
-            final_image[y_start:y_end, x_start:x_end] = (image[:,:,:3] * (alpha) + final_image[y_start:y_end, x_start:x_end] * (1 - alpha)).astype(np.uint8)
+            # Check if the image layer has an alpha channel
+            if image.shape[2] >= 4:
+                alpha = alpha_coef * (image[:, :, 3] / 255.0).reshape((image.shape[0], image.shape[1], 1))
+                blend_area = final_image[start_y:end_y, start_x:end_x]
+                image_rgb = image[:, :, :3]
+                final_image[start_y:end_y, start_x:end_x] = (image_rgb * alpha + blend_area * (1 - alpha)).astype(np.uint8)
+            else:
+                final_image[start_y:end_y, start_x:end_x] = image
 
         return final_image
 
     def clear(self):
+        """
+        Clears all layers from the scene.
+        """
         self.layers.clear()
 
 
 
-
+#
+#
+# def main():
+#     # Create a blank white image
+#     height, width = 400, 400
+#
+#     cap = cv2.VideoCapture(0)
+#
+#     smiley = cv2.imread("smiley.png", cv2.IMREAD_UNCHANGED)
+#
+#     while cap.isOpened():
+#         ret, image = cap.read()
+#         if not ret:
+#             break
+#         image = cv2.resize(image, (width, height))
+#
+#         layers = SceneRender((300, 300))
+#
+#         # Initialize the Drawing class
+#         drawing = Graphic((400, 400))
+#         # Initialize the Drawing class
+#         transforms = Graphic(image.copy())
+#
+#         sprite = Graphic(smiley)
+#
+#         # Draw shapes and text
+#         drawing.draw_rectangle((0, 0), (400, 400), (255, 255, 255), -1)
+#         drawing.draw_rectangle((50, 50), (150, 150), (255, 0, 0), 5, alpha = 0.5)
+#         drawing.draw_circle((200, 200), 50, (0, 255, 255), -1, alpha=0.5)
+#         drawing.draw_circle((250, 200), 50, (0, 255, 0), -1, alpha=0.5)
+#         drawing.draw_circle((300, 200), 50, (0, 255, 0), -1, alpha=0.5)
+#         drawing.draw_text('Hello, OpenCV!', (50, 250), 'Hollster.ttf', 30, (0, 0, 0), alpha = 0.8)
+#         drawing.draw_arrow((100, 200), (300, 300), (0, 0, 255), 3, 0.3)
+#
+#         sprite.resize((300, 300), cv2.INTER_NEAREST)
+#
+#
+#         transforms.apply_perspective_transform(
+#             [(0, 0), (width, 0), (width, height), (0, height)],  # source points
+#             [(0, height // 3), (width, 0), (width, height), (0, 2 * height // 3)],  # destination points
+#             (width, height)
+#         ).apply_sketch_effect()
+#
+#         # layers.add_layer(transforms, (0, 0), 0.5)
+#         layers.add_layer(drawing, (0, 0))
+#         # layers.add_layer(sprite, (0, 0))
+#
+#         # Display the image
+#         cv2.imshow('Drawing', layers.get_image())
+#
+#         key = cv2.waitKey(1) & 0xFF
+#         if key == ord("q") or key == 27:
+#             break
+#     cv2.destroyAllWindows()
 
 def main():
-    # Create a blank white image
-    height, width = 400, 400
-
     cap = cv2.VideoCapture(0)
 
-    smiley = cv2.imread("smiley.png", cv2.IMREAD_UNCHANGED)
-
+    original_graphic = Graphic()
     while cap.isOpened():
-        ret, image = cap.read()
+        ret, img = cap.read()
         if not ret:
             break
-        image = cv2.resize(image, (width, height))
+        # Create a Graphic object for the original image
+        original_graphic.reset_image(img)
+        original_graphic.resize((100, 100))
 
-        layers = SceneRender((300, 300))
+        # Create various transformations and effects
+        gray_graphic = Graphic(original_graphic).convert_to_grayscale()
+        blurred_graphic = Graphic(original_graphic).apply_blur((5, 5)).rotate(90)
+        edge_graphic = Graphic(original_graphic).apply_edge_detection()
+        cartoon_graphic = Graphic(original_graphic).apply_cartoon_effect()
+        painting_graphic = Graphic(original_graphic).apply_painting_effect()
+        sketch_graphic = Graphic(original_graphic).apply_sketch_effect()
 
-        # Initialize the Drawing class
-        drawing = Graphic((400, 400))
-        # Initialize the Drawing class
-        transforms = Graphic(image.copy())
+        # Set the size for the scene render based on image width and number of transformations
+        render_width = original_graphic.width() * 3  # Display 7 images side by side
+        render_height = max(original_graphic.height(), gray_graphic.height(), blurred_graphic.height(),
+                            edge_graphic.height(), cartoon_graphic.height(), painting_graphic.height(),
+                            sketch_graphic.height()) * 2
 
-        sprite = Graphic(smiley)
+        scene = SceneRender((render_width, render_height))
 
-        # Draw shapes and text
-        drawing.draw_rectangle((0, 0), (400, 400), (255, 255, 255), -1)
-        drawing.draw_rectangle((50, 50), (150, 150), (255, 0, 0), 5, alpha = 0.5)
-        drawing.draw_circle((200, 200), 50, (0, 255, 255), -1, alpha=0.5)
-        drawing.draw_circle((250, 200), 50, (0, 255, 0), -1, alpha=0.5)
-        drawing.draw_circle((300, 200), 50, (0, 255, 0), -1, alpha=0.5)
-        drawing.draw_text('Hello, OpenCV!', (50, 250), 'Fonts/Hollster.ttf', 30, (0, 0, 0), alpha = 0.8)
-        drawing.draw_arrow((100, 200), (300, 300), (0, 0, 255), 3, 0.3)
+        # Add layers to the scene with the original and transformed images
+        x_offset = 0
+        y_offset = 0
+        scene.add_layer(gray_graphic, (x_offset, y_offset))
+        x_offset += gray_graphic.width()
+        scene.add_layer(blurred_graphic, (x_offset, y_offset))
+        x_offset += blurred_graphic.width()
+        scene.add_layer(edge_graphic, (x_offset, y_offset))
+        x_offset = 0
+        y_offset += edge_graphic.height()
+        scene.add_layer(cartoon_graphic, (x_offset, y_offset))
+        x_offset += cartoon_graphic.width()
+        scene.add_layer(painting_graphic, (x_offset, y_offset))
+        x_offset += painting_graphic.width()
+        scene.add_layer(sketch_graphic, (x_offset, y_offset))
 
-        sprite.resize((300, 300), cv2.INTER_NEAREST)
-
-
-        transforms.apply_perspective_transform(
-            [(0, 0), (width, 0), (width, height), (0, height)],  # source points
-            [(0, height // 3), (width, 0), (width, height), (0, 2 * height // 3)],  # destination points
-            (width, height)
-        ).apply_sketch_effect()
-
-        # layers.add_layer(transforms, (0, 0), 0.5)
-        layers.add_layer(drawing, (0, 0))
-        # layers.add_layer(sprite, (0, 0))
-
-        # Display the image
-        cv2.imshow('Drawing', layers.get_image())
-
-        key = cv2.waitKey(1) & 0xFF
+        cv2.imshow("Result", scene.get_image())
+        key = cv2.waitKey(30)
         if key == ord("q") or key == 27:
             break
     cv2.destroyAllWindows()
