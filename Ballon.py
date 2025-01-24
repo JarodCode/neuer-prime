@@ -2,7 +2,7 @@ import numpy as np
 from Graphics import Graphic, SceneRender
 import cv2
 from Tir import Tir
-import imutils
+#import imutils
 
 class Ballon :
     def __init__(self, sprite, idPos, pos, traj, rayon, enContactGant):

@@ -25,7 +25,7 @@ class Gants:
         cv2.namedWindow("Frame", cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty("Frame", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-
+    @staticmethod
     def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
         """Superpose une image avec rotation et transparence sur une autre image."""
         h, w = overlay.shape[:2]
@@ -49,26 +49,32 @@ class Gants:
         rotated_alpha_area = rotated_alpha[overlay_y1:overlay_y2, overlay_x1:overlay_x2][:, :, None]
         background[y1:y2, x1:x2] = rotated_alpha_area * rotated_overlay_area + (1 - rotated_alpha_area) * blend_area
 
-    def process_frame(self, frame):
-        """Traite une image pour détecter les mains et superposer les gants."""
+    def process_frame(self, background):
+        """Détecte les mains et superpose les gants sur l'image de fond."""
         
-        # Redimensionner l'image capturée pour qu'elle remplisse l'écran
-        frame = cv2.resize(frame, (self.screen_width, self.screen_height))
-        
-        frame = cv2.flip(frame, 1)
+        # Capture une image de la webcam
+        success, frame = self.cap.read()
+        if not success:
+            print("Erreur : Impossible de lire l'image depuis la webcam.")
+            return background
 
+        # Redimensionne et retourne horizontalement l'image de la webcam
+        frame = cv2.resize(frame, (self.screen_width, self.screen_height))
+        frame = cv2.flip(frame, 1)
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Détecte les mains avec Mediapipe
         result = self.Hands.process(frame_rgb)
 
         if result.multi_hand_landmarks:
             for hand_index, handLms in enumerate(result.multi_hand_landmarks):
-                h, w, c = frame.shape
-                
-                # Déterminer si la main est gauche ou droite
+                h, w, c = background.shape
+
+                # Détermine si la main est gauche ou droite
                 handedness = result.multi_handedness[hand_index].classification[0].label
                 is_right_hand = handedness == "Right"
 
-                # Récupération des points pour le poignet (id 0) et le centre de la main (id 9)
+                # Récupère les points pour le poignet (id 0) et le centre de la main (id 9)
                 wrist = handLms.landmark[0]
                 center_hand = handLms.landmark[9]
 
@@ -76,40 +82,28 @@ class Gants:
                 cx1, cy1 = int(wrist.x * w), int(wrist.y * h)
                 cx2, cy2 = int(center_hand.x * w), int(center_hand.y * h)
 
-                # Calcul de l'angle de rotation
+                # Calcule l'angle de rotation
                 angle = math.degrees(math.atan2(cy2 - cy1, cx2 - cx1))
 
-                # Calcul du nouvel offset pour positionner le gant au centre de la main
+                # Redimensionne l'image des gants pour s'adapter à la taille de la main
                 glove_h, glove_w = self.glove_img.shape[:2]
                 new_width = int(w * 0.3)
                 new_height = int(new_width * glove_h / glove_w)
                 resized_glove = cv2.resize(self.glove_img, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
+                # Retourne horizontalement le gant si la main est droite
                 if is_right_hand:
                     resized_glove = cv2.flip(resized_glove, 1)
 
-                # Récupérer les canaux alpha et BGR
+                # Récupère les canaux alpha et BGR
                 resized_alpha = resized_glove[:, :, 3] / 255.0
                 resized_glove_bgr = resized_glove[:, :, :3]
 
-                # Déplacer le gant pour que son centre soit aligné avec la main
-                cx, cy = cx2, cy2
-                self.overlay_rotated_image(frame, resized_glove_bgr, cx, cy, angle + 90, resized_alpha)
+                # Positionne le gant sur la main détectée
+                self.overlay_rotated_image(background, resized_glove_bgr, cx2, cy2, angle + 90, resized_alpha)
 
-        return frame
+        return background
 
-    def run(self):
-        """Lance la détection des mains et l'affichage."""
-        while True:
-            success, frame = self.cap.read()
-
-            processed_frame = self.process_frame(frame)
-            cv2.imshow("Frame", processed_frame)
-
-            if cv2.waitKey(20) & 0xFF == ord('q'):
-                break
-
-        self.cap.release()
-        cv2.destroyAllWindows()
+    
 
 
