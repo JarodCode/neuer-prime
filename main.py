@@ -24,10 +24,7 @@ xy_quitter = [300, 500, 300, 360]
 xy_retour_lbd = [0, 200, 540, 600]
 xy_stat_lbd = [550, 800, 540, 600]
 
-
-
 window_width, window_height = 800, 600  # Taille de la fenêtre
-
 
 #backgrounds (main menu, "statistiques" and leaderboard menus)
 img_main_path = "img/fond_main.jpg"
@@ -38,12 +35,21 @@ img_lbd_path = "img/neuer_prime.jpg"
 background_lbd = cv2.imread(img_lbd_path)
 background_lbd = cv2.resize(background_lbd, (window_width, window_height))
 
+#main while (show menu)
+showWindow = False
+
 #initial state
 state = "main_menu"
 
+#what button have to be highlighted
+buttonToHighlight = None
+
 # Fonction pour détecter les clics sur les boutons
 def mouse_event(event, x, y, flags, param):
+    global buttonToHighlight
     global state  # Déclare que vous utilisez la variable globale "state"
+    global showWindow
+    #left click
     if event == cv2.EVENT_LBUTTONDOWN:
         #if in main menu
         if state == "main_menu":
@@ -57,7 +63,7 @@ def mouse_event(event, x, y, flags, param):
             
             elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
                 print("Quitter...")
-                cv2.destroyAllWindows()
+                showWindow = False
         
         #if in leaderboard 
         elif state == "leaderboard" : 
@@ -73,8 +79,40 @@ def mouse_event(event, x, y, flags, param):
             if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
                 print("Retour au leaderboard")
                 state = "leaderboard"
+    
+    #to follow mouse movement and to change the button to highlight
+    elif event == cv2.EVENT_MOUSEMOVE:
+        #if in main menu
+        if state == "main_menu":
+            if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
+                buttonToHighlight = "Jouer"                
 
+            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
+                buttonToHighlight = "Leaderboard"
+            
+            elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
+                buttonToHighlight = "Quitter"
+
+            else : #no buton to highlight
+                buttonToHighlight = None
         
+        #if in leaderboard 
+        elif state == "leaderboard" : 
+            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
+                buttonToHighlight = "Retour"
+            elif xy_stat_lbd[0] <= x <= xy_stat_lbd[1] and xy_stat_lbd[2] <= y <= xy_stat_lbd[3]:     #"statistiques" button
+                buttonToHighlight = "Statistiques"
+            else : #no buton to highlight
+                buttonToHighlight = None
+
+        #if in "statistiques" 
+        elif state == "statistiques" : 
+            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
+                buttonToHighlight = "Retour2"
+            else : #no buton to highlight
+                buttonToHighlight = None
+
+       
 
 # Ajouter les boutons par-dessus l'image de fond
 def draw_main_menu(img):    
@@ -82,14 +120,23 @@ def draw_main_menu(img):
     # Dessiner le bouton "Jouer"
     cv2.rectangle(img, (xy_jouer[0], xy_jouer[2]), (xy_jouer[1], xy_jouer[3]), blue, -1)  
     cv2.putText(img, "JOUER", (350, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Jouer":
+            cv2.rectangle(img, (xy_jouer[0], xy_jouer[2]), (xy_jouer[1], xy_jouer[3]), black, 2)  
+    
 
     # Dessiner le bouton "Leaderboard"
     cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), orange, -1)  
     cv2.putText(img, "LEADERBOARD", (285, 240), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Leaderboard":
+            cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), black, 2)  
+
 
     # Dessiner le bouton "Quitter"
     cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), red, -1) 
     cv2.putText(img, "QUITTER", (332, 340), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Quitter":
+        cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), black, 2) 
+
 
 def draw_leaderboard(img):
     #leaderboard menu title
@@ -98,10 +145,16 @@ def draw_leaderboard(img):
     #draw return button
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
     cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Retour":
+        cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), black, 2)  
+
 
     #draw "statistique" button
     cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), green, -1)  
     cv2.putText(img, "STATISTIQUES", (562, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Statistiques":
+            cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), black, 2)  
+
 
 def draw_stat_menu(img):
     # title
@@ -110,15 +163,17 @@ def draw_stat_menu(img):
     #draw return button
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
     cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Retour2":
+            cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), black, 2)  
+
 
 
 # Affichage du menu
 cv2.namedWindow("Menu")
 cv2.setMouseCallback("Menu", mouse_event)
 
-frame_index = 0
-while True:
-    
+showWindow = True
+while showWindow:
 
     # Créer une copie de la frame pour chaque itération
     main_menu = background_main.copy()
@@ -137,11 +192,7 @@ while True:
         draw_stat_menu(lbd_menu)
         cv2.imshow("Menu", lbd_menu)
 
-
     # Attendre une touche pour quitter
     if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
         break
 
-if cv2.getWindowProperty("Menu", cv2.WND_PROP_VISIBLE) >= 1:
-    cv2.destroyWindow("Menu")
-cv2.waitKey(1)
