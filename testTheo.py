@@ -69,7 +69,6 @@ def main():
                    rayon=200,
                    enContactGant=False)
 
-    #aaaa
     render = SceneRender((screen_width, screen_height))
 
     nbFrame = np.shape(myTir.traj)
@@ -123,7 +122,7 @@ def main():
 
                 # Redimensionner les gants
                 glove_h, glove_w = glove_img.shape[:2]
-                new_width = int(w * 0.3)
+                new_width = int(w * 0.25)
                 new_height = int(new_width * glove_h / glove_w)
                 resized_glove = cv2.resize(glove_img, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
