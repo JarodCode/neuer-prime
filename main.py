@@ -10,18 +10,17 @@ def main():
 
     EPSILON = 1
     WIDTH, HEIGHT = 1600, 900
+    GAMELOOP = True
 
     myTir = Tir()
-    
-    # al = np.random.choice([1,2,3]) 
-    # if al == 1 :
-    #     myTir.panenka()
-    # elif al == 2:
-    #     myTir.effet()
-    # else: 
-    #     myTir.direct()
-
-    myTir.direct()
+    20
+    al = np.random.choice([1,2,3])
+    if al == 1 :
+        myTir.panenka()
+    elif al == 2:
+        myTir.effet()
+    else: 
+        myTir.direct()
 
     # Création du ballon 
     balle = Ballon(sprite="ballon.png",
@@ -38,7 +37,7 @@ def main():
     compt = 0
     RAYON = balle.rayon
 
-    while True:
+    while GAMELOOP:
         caneva = Graphic((WIDTH, HEIGHT))
         caneva.fill((50, 205, 50))
 
@@ -54,7 +53,7 @@ def main():
 
         key = cv2.waitKey(EPSILON) & 0xFF
         if key == ord('q') or key == 27: 
-            break
+            GAMELOOP = False
 
         if compt < len(taille) - 1 : 
             compt += 1

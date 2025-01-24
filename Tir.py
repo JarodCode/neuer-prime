@@ -6,7 +6,7 @@ import scipy as sns
 WIDTH, HEIGHT = 1600, 900
 MIDW, MIDH = WIDTH/2, HEIGHT/2
 WIDTHR, HEIGHTR = WIDTH - 50, HEIGHT - 50
-RAYON = 200
+RAYON = 100
 
 class Tir :
 
