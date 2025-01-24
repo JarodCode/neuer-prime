@@ -1,0 +1,19 @@
+raspberry 6
+10.111.4.41
+port 3069
+
+ssh pi@10.111.4.41
+mdp : raspberry
+cd theo
+node server.js
+
+""" Vous pouvez utiliser les fonctions du script 
+pour ajouter et accéder à la base de données 
+et publier des données dans le réseau. 
+Par exemple :
+• API Raspberry.dweet for("my-thing", "temperature": 100, "x": 42, "user": "you") 
+va ajouter une entrée ”my-thing” dans la base de donn´ees.
+• API Raspberry.get dweets for("my-thing") 
+retourne toutes les entrées dans la base de données.
+• etc... 
+Fouillez un peu le code pour en trouver d’autres et/ou en ajouter vous-mếme"""
