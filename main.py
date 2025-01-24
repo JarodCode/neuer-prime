@@ -1,6 +1,14 @@
 import cv2
 import numpy as np
 import subprocess
+import API_Raspberry
+""" Vous pouvez utiliser les fonctions du script pour ajouter 
+et accéder à la base de données et publier des données dans le r´eseau. 
+Par exemple :
+• API Raspberry.dweet for("my-thing", "temperature": 100, "x": 42, "user": "you") va ajouter
+une entrée ”my-thing” dans la base de donn´ees.
+• API Raspberry.get dweets for("my-thing") retourne toutes les entrées dans la base de données.
+• etc... Fouillez un peu le code pour en trouver d’autres et/ou en ajouter vous-mếme"""
 
 # Couleurs
 white = (255, 255, 255)   # Blanc classique pour le texte ou le fond
@@ -141,4 +149,6 @@ while True:
     if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
         break
 
-cv2.destroyAllWindows()
+if cv2.getWindowProperty("Menu", cv2.WND_PROP_VISIBLE) >= 1:
+    cv2.destroyWindow("Menu")
+cv2.waitKey(1)
