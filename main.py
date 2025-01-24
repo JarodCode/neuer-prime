@@ -60,7 +60,7 @@ def mouse_event(event, x, y, flags, param):
         if state == "main_menu":
             if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
                 print("Jouer !")
-                subprocess.Popen(["python3", "detection_main.py"])
+                subprocess.Popen(["python3", "testTheo.py"])
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
                 print("Affichage du leaderboard")
@@ -201,59 +201,3 @@ while showWindow:
     if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
         break
 
-def main():
-
-    EPSILON = 1
-    WIDTH, HEIGHT = 1600, 900
-    GAMELOOP = True
-
-    myTir = Tir()
-    20
-    al = np.random.choice([1,2,3])
-    if al == 1 :
-        myTir.panenka()
-    elif al == 2:
-        myTir.effet()
-    else: 
-        myTir.direct()
-
-    # Création du ballon 
-    balle = Ballon(sprite="ballon.png",
-                   idPos=0,
-                   pos=(0,0),
-                   traj=myTir.traj,
-                   rayon=200,
-                   enContactGant=False)
-
-    render = SceneRender((WIDTH,HEIGHT))
-
-    nbFrame = np.shape(myTir.traj)
-    taille = np.linspace(0.1, 1, nbFrame[1])
-    compt = 0
-    RAYON = balle.rayon
-
-    while GAMELOOP:
-        caneva = Graphic((WIDTH, HEIGHT))
-        caneva.fill((50, 205, 50))
-
-        render.clear()
-        balle.resize_graphic(int(RAYON*taille[compt]))
-
-        render.add_layer(caneva)
-        render.add_layer(balle.get_graphic(), balle.update())
-
-        output = render.get_image()
-
-        cv2.imshow("Resultat", output)
-
-        key = cv2.waitKey(EPSILON) & 0xFF
-        if key == ord('q') or key == 27: 
-            GAMELOOP = False
-
-        if compt < len(taille) - 1 : 
-            compt += 1
-
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    main()
