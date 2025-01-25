@@ -31,7 +31,7 @@ def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
 
 def main():
     EPSILON = 1
-    WIDTH, HEIGHT = 1600, 900
+    WIDTH, HEIGHT = 160, 90
     GAMELOOP = True
 
     # Charger l'image des gants
@@ -68,13 +68,14 @@ def main():
                    traj=myTir.traj,
                    rayon=200,
                    enContactGant=False)
+    
+    RAYONMAX = balle.rayon
 
     render = SceneRender((screen_width, screen_height))
 
     nbFrame = np.shape(myTir.traj)
     taille = np.linspace(0.1, 1, nbFrame[1])
     compt = 0
-    RAYON = balle.rayon
 
     while GAMELOOP:
         # Capture de l'image de la webcam
@@ -94,16 +95,35 @@ def main():
         caneva.fill((50, 205, 50))  # Fond vert (pelouse)
 
         render.clear()
-        balle.resize_graphic(int(RAYON * taille[compt]))
+        balle.resize_graphic(int(RAYONMAX * taille[compt]))
         render.add_layer(caneva)
+        
         render.add_layer(balle.get_graphic(), balle.update())
 
         output = render.get_image()
+
+        # Variables pour vérifier si la balle est arrêtée
+        ball_x, ball_y = balle.pos
+        ball_radius = balle.rayon
+        ball_stopped = False
 
         # Superposer les gants si des mains sont détectées
         if result.multi_hand_landmarks:
             for hand_index, handLms in enumerate(result.multi_hand_landmarks):
                 h, w, c = img.shape
+
+                # Récupérer les coordonnées des landmarks de la main
+                landmark_positions = [(int(lm.x * w), int(lm.y * h)) for lm in handLms.landmark]
+
+                # Déterminer les bornes de la hitbox (rectangle englobant)
+                x_min = min([pos[0] for pos in landmark_positions])
+                y_min = min([pos[1] for pos in landmark_positions])
+                x_max = max([pos[0] for pos in landmark_positions])
+                y_max = max([pos[1] for pos in landmark_positions])
+
+                # Vérifier si la balle est dans la hitbox
+                if ball_radius == 200 and x_min <= ball_x <= x_max and y_min <= ball_y <= y_max:
+                    ball_stopped = True  # La balle est arrêtée
 
                 # Déterminer si la main est gauche ou droite
                 handedness = result.multi_handedness[hand_index].classification[0].label
@@ -133,6 +153,14 @@ def main():
                 resized_glove_bgr = resized_glove[:, :, :3]
 
                 overlay_rotated_image(output, resized_glove_bgr, cx2, cy2, angle + 90, resized_alpha)
+            
+
+        # Vérifier si la balle est arrêtée ou si c'est un but
+        if ball_radius == 200:
+            if ball_stopped:
+                print("MAIS QUEL ARRÊT !!!!!")
+            else:
+                print("ET C'EST LE BUUUUUUT!!!!!!")
 
         cv2.imshow("Resultat", output)
 
