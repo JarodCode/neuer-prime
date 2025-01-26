@@ -22,7 +22,7 @@ class Tir :
         interpY = [self.coDepart[1], -np.random.uniform(400, 500), coArriveePanenka[1]]
         interp = sns.interpolate.CubicSpline(interpX, interpY)
         
-        traj = np.zeros([3, 50])
+        traj = np.zeros([3, 25])
         traj[0, :] = np.linspace(self.coDepart[0], coArriveePanenka[0], traj.shape[1])
         traj[1, :] = interp(traj[0, :])
 
@@ -36,7 +36,7 @@ class Tir :
         interpY = [self.coDepart[1], -np.random.uniform(400, 500), coArriveePanenka[1]]
         interp = sns.interpolate.CubicSpline(interpX, interpY)
         
-        traj = np.zeros([3, 50])
+        traj = np.zeros([3, 25])
         traj[0, :] = np.linspace(self.coDepart[0], coArriveePanenka[0] - MIDW + RAYON, traj.shape[1])
         traj[1, :] = interp(np.linspace(self.coDepart[0], coArriveePanenka[0], traj.shape[1]))
 

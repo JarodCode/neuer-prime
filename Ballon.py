@@ -32,8 +32,6 @@ class Ballon :
     def resize_graphic(self, rayon):
         self.img = self.initial_img
         self.rayon = rayon
-        #self.img = cv2.resize(self.img, width=int(rayon*2))
         self.img = cv2.resize(self.img, (int(rayon), int(rayon)))
-        #self.img = cv2.rotate(self.img, cv2.ROTATE_90_CLOCKWISE)
 
     

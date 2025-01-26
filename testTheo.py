@@ -6,6 +6,7 @@ from screeninfo import get_monitors
 from Graphics import Graphic, SceneRender
 from Tir import Tir
 from Ballon import Ballon
+import subprocess
 
 def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
     """Superpose une image avec rotation et transparence sur une autre image."""
@@ -31,7 +32,8 @@ def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
 
 def main():
     EPSILON = 1
-    WIDTH, HEIGHT = 160, 90
+    WIDTH, HEIGHT = 1600, 900
+    MIDW, MIDH = WIDTH/2, HEIGHT/2
     GAMELOOP = True
 
     # Charger l'image des gants
@@ -64,18 +66,22 @@ def main():
     # Création du ballon
     balle = Ballon(sprite="ballon.png",
                    idPos=0,
-                   pos=(0, 0),
+                   pos=(MIDW, MIDH-100),
                    traj=myTir.traj,
                    rayon=200,
                    enContactGant=False)
     
     RAYONMAX = balle.rayon
+    POSDEPART = balle.pos
+    balle.resize_graphic(int(RAYONMAX * 0.1))
 
     render = SceneRender((screen_width, screen_height))
 
     nbFrame = np.shape(myTir.traj)
     taille = np.linspace(0.1, 1, nbFrame[1])
     compt = 0
+    attenteBalle = 0
+    score = 0
 
     while GAMELOOP:
         # Capture de l'image de la webcam
@@ -95,10 +101,15 @@ def main():
         caneva.fill((50, 205, 50))  # Fond vert (pelouse)
 
         render.clear()
-        balle.resize_graphic(int(RAYONMAX * taille[compt]))
         render.add_layer(caneva)
-        
-        render.add_layer(balle.get_graphic(), balle.update())
+
+        if attenteBalle > 10:
+            render.add_layer(balle.get_graphic(), balle.update())
+            balle.resize_graphic(int(RAYONMAX * taille[compt]))
+            if compt < len(taille) - 1:
+                compt += 1
+        else:
+            render.add_layer(balle.get_graphic(), POSDEPART)
 
         output = render.get_image()
 
@@ -159,8 +170,25 @@ def main():
         if ball_radius == 200:
             if ball_stopped:
                 print("MAIS QUEL ARRÊT !!!!!")
+                balle.resize_graphic(int(RAYONMAX * 0.1))
+                balle.pos = POSDEPART
+                attenteBalle=0
+                compt=0
+                score += 100
+                balle.idPos=0
+                # Définir le type de tir (au hasard)
+                al = np.random.choice([1, 2, 3])
+                if al == 1:
+                    myTir.panenka()
+                elif al == 2:
+                    myTir.effet()
+                else:
+                    myTir.direct()
+                balle.traj = myTir.traj
             else:
                 print("ET C'EST LE BUUUUUUT!!!!!!")
+                print(score)
+                GAMELOOP = False
 
         cv2.imshow("Resultat", output)
 
@@ -168,8 +196,7 @@ def main():
         if key == ord('q') or key == 27:
             GAMELOOP = False
 
-        if compt < len(taille) - 1:
-            compt += 1
+        attenteBalle += 1
 
     cap.release()
     cv2.destroyAllWindows()
