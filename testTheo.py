@@ -103,7 +103,7 @@ def main():
         render.clear()
         render.add_layer(caneva)
 
-        if attenteBalle > 10:
+        if attenteBalle > 25:
             render.add_layer(balle.get_graphic(), balle.update())
             balle.resize_graphic(int(RAYONMAX * taille[compt]))
             if compt < len(taille) - 1:
