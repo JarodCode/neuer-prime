@@ -6,7 +6,7 @@ from Graphics import Graphic, SceneRender
 from Tir import Tir
 from Ballon import Ballon
 from screeninfo import get_monitors
-
+import bdd
 
 # Couleurs
 white = (255, 255, 255)   # Blanc classique pour le texte ou le fond
@@ -142,10 +142,16 @@ def draw_main_menu(img):
     if buttonToHighlight == "Quitter":
         cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), black, 2) 
 
+leaderboard = bdd.leaderboard
 
 def draw_leaderboard(img):
     #leaderboard menu title
     cv2.putText(img, 'LEADERBOARD', (285, 60), cv2.FONT_HERSHEY_COMPLEX, 1, yellow, 2)
+
+    # Afficher les scores du leaderboard
+    for i, (name, score) in enumerate(leaderboard):
+        text = f"{i + 1}. {name}: {score}"  # Afficher le rang, le nom et le score
+        cv2.putText(img, text, (xy_leaderboard[0] + 10, 170 + (i * 50)), cv2.FONT_HERSHEY_COMPLEX, 1, red, 2)    
     
     #draw return button
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
