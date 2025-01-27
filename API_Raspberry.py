@@ -7,7 +7,7 @@ import requests
 
 # base url for all requests
 # Think about modifying the URL to use Raspberry IP address and Raspberry open port
-BASE_URL = "http://10.111.4.41:3069"
+BASE_URL = "http://10.111.4.33:3000"
 # Something like: "http://192.168.12.83:3000"
 
 
@@ -68,6 +68,9 @@ def get_dweets_for(thing_name):
     """
     res = _request('get', '/get/dweets/for/{0}'.format(thing_name), params=None, session=None)["dweets"]
     return [{**r, "content": json.loads(r["content"])} for r in res]
+
+def get_data(data):
+    return [(item['content']['name'], item['content']['score']) for item in data]
 
 def get_latest_dweet_for(thing_name, key=None, session=None):
     """Read the latest dweet for a dweeter
