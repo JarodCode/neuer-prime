@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import subprocess
 import API_Raspberry as API
+import platform
 from Graphics import Graphic, SceneRender
 from Tir import Tir
 from Ballon import Ballon
@@ -65,14 +66,17 @@ def mouse_event(event, x, y, flags, param):
         if state == "main_menu":
             if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
                 print("Jouer !")
-                subprocess.Popen(["python3", "jeu.py"])
+                if "raspberrypi" in platform.uname().version:
+                    print("Vous êtes sur un Raspberry Pi.")
+                else:
+                    print("Vous n'êtes pas sur un Raspberry Pi.")
+                # subprocess.Popen(["python3", "jeu.py"])
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button                
                 print("Affichage du leaderboard")
                 update_leaderboard()  # Actualise le leaderboard
                 state = "leaderboard"
                 
-
                             
             elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
                 print("Quitter...")
