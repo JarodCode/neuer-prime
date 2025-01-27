@@ -1,12 +1,16 @@
 import numpy as np
 import scipy as sns
+from screeninfo import get_monitors
 
-# Le gardien se situe en (0, 0, 450)
-# Le ballon se situe en (0, 0, -450)
-WIDTH, HEIGHT = 1600, 900
+monitor = get_monitors()[0]
+screen_width = monitor.width 
+screen_height = monitor.height
+
+WIDTH, HEIGHT = screen_width, screen_height
 MIDW, MIDH = WIDTH/2, HEIGHT/2
 WIDTHR, HEIGHTR = WIDTH - 50, HEIGHT - 50
 RAYON = 100
+
 
 class Tir :
 
