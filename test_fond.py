@@ -1,24 +1,59 @@
+import cv2
+import mediapipe as mp
+import numpy as np
+import math
+from screeninfo import get_monitors
+from Graphics import Graphic, SceneRender
+from Tir import Tir
+from Ballon import Ballon
+import subprocess
+
+def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
+    """Superpose une image avec rotation et transparence sur une autre image."""
+    h, w = overlay.shape[:2]
+    rotation_matrix = cv2.getRotationMatrix2D((w // 2, h // 2), -angle, 1.0)
+
+    # Appliquer la rotation à l'image et au masque alpha
+    rotated_overlay = cv2.warpAffine(overlay, rotation_matrix, (w, h))
+    rotated_alpha = cv2.warpAffine(alpha_mask, rotation_matrix, (w, h))
+
+    # Définir les limites du cadre pour la superposition
+    x1, x2 = max(0, x - w // 2), min(background.shape[1], x + w // 2)
+    y1, y2 = max(0, y - h // 2), min(background.shape[0], y + h // 2)
+    overlay_x1, overlay_x2 = max(0, w // 2 - x), w - max(0, x + w // 2 - background.shape[1])
+    overlay_y1, overlay_y2 = max(0, h // 2 - y), h - max(0, y + h // 2 - background.shape[0])
+
+    # Ajuster dynamiquement les dimensions pour éviter les incompatibilités
+    blend_h = min(y2 - y1, overlay_y2 - overlay_y1)
+    blend_w = min(x2 - x1, overlay_x2 - overlay_x1)
+    y1, y2 = y1, y1 + blend_h
+    x1, x2 = x1, x1 + blend_w
+    overlay_y1, overlay_y2 = overlay_y1, overlay_y1 + blend_h
+    overlay_x1, overlay_x2 = overlay_x1, overlay_x1 + blend_w
+
+    # Superposition des pixels avec rotation
+    blend_area = background[y1:y2, x1:x2]
+    rotated_overlay_area = rotated_overlay[overlay_y1:overlay_y2, overlay_x1:overlay_x2]
+    rotated_alpha_area = rotated_alpha[overlay_y1:overlay_y2, overlay_x1:overlay_x2][:, :, None]
+
+    background[y1:y2, x1:x2] = rotated_alpha_area * rotated_overlay_area + (1 - rotated_alpha_area) * blend_area
+
+
+
 def main():
     EPSILON = 1
     WIDTH, HEIGHT = 1600, 900
-    MIDW, MIDH = WIDTH / 2, HEIGHT / 2
+    MIDW, MIDH = WIDTH/2, HEIGHT/2
     GAMELOOP = True
 
     # Charger l'image des gants
-    glove_img = cv2.imread("img/gant.png", cv2.IMREAD_UNCHANGED)
+    glove_img = cv2.imread("img/Gant.png", cv2.IMREAD_UNCHANGED)
     if glove_img is None:
         print("Erreur : Impossible de charger l'image 'gant.png'.")
         exit()
 
-    # Charger l'image de fond personnalisée
-    background_img = cv2.imread("img/background.jpg")
-    if background_img is None:
-        print("Erreur : Impossible de charger l'image 'background.jpg'.")
-        exit()
 
-    # Redimensionner l'image de fond aux dimensions de l'écran
-    background_img = cv2.resize(background_img, (WIDTH, HEIGHT))
-
+    
     # Initialiser Mediapipe
     cap = cv2.VideoCapture(0)
     mpHands = mp.solutions.hands
@@ -26,8 +61,17 @@ def main():
 
     # Récupérer les dimensions de l'écran principal
     monitor = get_monitors()[0]
-    screen_width = monitor.width
+    screen_width = monitor.width 
     screen_height = monitor.height
+
+    # Charger l'image de fond personnalisée
+    background_img = cv2.imread("img/background.png")
+    if background_img is None:
+        print("Erreur : Impossible de charger l'image 'background.jpeg'.")
+        exit()
+    # Redimensionner l'image de fond aux dimensions de l'écran
+    background_img = cv2.resize(background_img, (screen_width - 55, screen_height - 105 ))
+
 
     myTir = Tir()
 
@@ -41,9 +85,9 @@ def main():
         myTir.direct()
 
     # Création du ballon
-    balle = Ballon(sprite="ballon.png",
+    balle = Ballon(sprite="img/Ballon.png",
                    idPos=0,
-                   pos=(MIDW, MIDH - 100),
+                   pos=(MIDW, MIDH-100),
                    traj=myTir.traj,
                    rayon=200,
                    enContactGant=False)
@@ -72,8 +116,13 @@ def main():
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         result = Hands.process(imgRGB)
 
+        #aaaa
+        # Création du canevas de base
+        #caneva = Graphic((screen_width, screen_height))
+        #caneva.fill((50, 205, 50))  # Fond vert (pelouse)
+
         # Créer une copie de l'image de fond pour servir de canevas
-        caneva = background_img.copy()
+        caneva = background_img.copy()        
 
         render.clear()
         render.add_layer(caneva)
@@ -128,7 +177,7 @@ def main():
 
                 # Redimensionner les gants
                 glove_h, glove_w = glove_img.shape[:2]
-                new_width = int(w * 0.25)
+                new_width = int(w * 0.4)
                 new_height = int(new_width * glove_h / glove_w)
                 resized_glove = cv2.resize(glove_img, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
@@ -139,6 +188,7 @@ def main():
                 resized_glove_bgr = resized_glove[:, :, :3]
 
                 overlay_rotated_image(output, resized_glove_bgr, cx2, cy2, angle + 90, resized_alpha)
+            
 
         # Vérifier si la balle est arrêtée ou si c'est un but
         if ball_radius == 200:
@@ -146,10 +196,10 @@ def main():
                 print("MAIS QUEL ARRÊT !!!!!")
                 balle.resize_graphic(int(RAYONMAX * 0.1))
                 balle.pos = POSDEPART
-                attenteBalle = 0
-                compt = 0
+                attenteBalle=0
+                compt=0
                 score += 100
-                balle.idPos = 0
+                balle.idPos=0
                 # Définir le type de tir (au hasard)
                 al = np.random.choice([1, 2, 3])
                 if al == 1:
