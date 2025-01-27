@@ -7,6 +7,7 @@ from Graphics import Graphic, SceneRender
 from Tir import Tir
 from Ballon import Ballon
 import subprocess
+import API_Raspberry as API
 
 def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
     """Superpose une image avec rotation et transparence sur une autre image."""
@@ -134,8 +135,10 @@ def main():
 
         output = render.get_image()
 
-        cv2.rectangle(output, (xy_score[0], xy_score[2]), (xy_score[1], xy_score[3]), (169, 169, 169) , -1)  
-        cv2.putText(output, "SCORE : " + str(score), (35, 60), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+        cv2.rectangle(output, (xy_score[0], xy_score[2]), (xy_score[1], xy_score[3]), (0, 165, 255) , -1)
+        cv2.rectangle(output, (xy_score[0], xy_score[2]), (xy_score[1], xy_score[3]), (255, 255, 255), 4)  # Contour blanc
+  
+        cv2.putText(output, "SCORE : " + str(score), (35, 60), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
 
 
         # Variables pour vérifier si la balle est arrêtée
@@ -221,19 +224,67 @@ def main():
     cap.release()
     cv2.destroyAllWindows()
 
+    player_name = ""  # Variable pour stocker le nom du joueur
+    MAX_NAME_LENGTH = 13  # Limite maximale de caractères pour le nom
+    
+    # Affichage de l'écran de Game Over
     while GAMEOVERLOOP:
-        # Afficher l'écran de Game Over
+        # Charger l'image de Game Over
         img_gameover_path = "img/gameOver.jpg"
         gameover = cv2.imread(img_gameover_path)
         gameover = cv2.resize(gameover, (screen_width, screen_height))
+
+        # Calculer la largeur du texte "Score: {score}"
+        score_text = f"Score: {score}"
+        (score_text_width, score_text_height), _ = cv2.getTextSize(score_text, cv2.FONT_HERSHEY_COMPLEX, 2, 2)
+
+        # Position du score 
+        x1_score, y1_score = 750, 650  # Coordonnées du rectangle pour le score
+        x2_score = x1_score + score_text_width + 50  # Ajuster avec le padding
+        y2_score = y1_score + score_text_height + 40  # Hauteur du rectangle
+
+        # Afficher le rectangle du score 
+        cv2.rectangle(gameover, (x1_score, y1_score - 10), (x2_score +30, y2_score), (0, 165, 255), -1)  # Rectangle orange
+        cv2.rectangle(gameover, (x1_score, y1_score -10), (x2_score +30, y2_score), (255, 255, 255), 4)  # Contour blanc
+
+        # Afficher le texte du score
+        cv2.putText(gameover, score_text, (x1_score + 10, y1_score + score_text_height + 10), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 255, 255), 2)
+
+        # Calculer la largeur du texte "Nom: {player_name}"
+        player_text = f"Nom: {player_name}"
+        (player_text_width, player_text_height), _ = cv2.getTextSize(player_text, cv2.FONT_HERSHEY_COMPLEX, 2, 2)
+
+        # Position du nom 
+        x1_name, y1_name = 750, y2_score + 50  # Coordonnées du rectangle pour le nom
+        x2_name = x1_name + player_text_width + 50  # Ajuster avec le padding
+        y2_name = y1_name + player_text_height + 40  # Hauteur du rectangle
+
+        # Dessiner le rectangle du nom
+        cv2.rectangle(gameover, (x1_name, y1_name -10 ), (x2_name, y2_name), (0, 165, 255), -1)  # Rectangle orange
+        cv2.rectangle(gameover, (x1_name, y1_name -10 ), (x2_name, y2_name), (255, 255, 255), 4)  # Contour blanc
+
+        # Afficher le texte du nom
+        cv2.putText(gameover, player_text, (x1_name + 10, y1_name + player_text_height + 10), cv2.FONT_HERSHEY_COMPLEX, 2, (255, 255, 255), 2)
+
+        # Afficher l'écran de Game Over
         cv2.namedWindow("Game Over", cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty("Game Over", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow("Game Over", gameover)
-        key = cv2.waitKey(EPSILON) & 0xFF
-        if key == ord('q') or key == 27:
-            GAMEOVERLOOP = False
-        
 
+        # Capturer les touches clavier
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:
+            GAMEOVERLOOP = False
+        elif key == 13:  # Touche 'Entrée'
+            if player_name:
+                print(f"Nom: {player_name} | Score: {score}")
+                API.dweet_for("score", {"name": player_name, "score": score})                
+                GAMEOVERLOOP = False
+        elif key == 8:  # Touche 'Backspace'
+            player_name = player_name[:-1]
+        elif key >= 32 and key <= 126:  # Touche visible
+            if len(player_name) < MAX_NAME_LENGTH:
+                player_name += chr(key)
 
 
 if __name__ == "__main__":

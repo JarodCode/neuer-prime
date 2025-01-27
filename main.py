@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import subprocess
-import API_Raspberry
+import API_Raspberry as API
 from Graphics import Graphic, SceneRender
 from Tir import Tir
 from Ballon import Ballon
@@ -36,7 +36,7 @@ img_main_path = "img/fond_main.jpg"
 background_main = cv2.imread(img_main_path)
 background_main = cv2.resize(background_main, (window_width, window_height))
 
-img_lbd_path = "img/neuer_prime.jpg"
+img_lbd_path = "img/fond_ldb.jpg"
 background_lbd = cv2.imread(img_lbd_path)
 background_lbd = cv2.resize(background_lbd, (window_width, window_height))
 
@@ -48,6 +48,11 @@ state = "main_menu"
 
 #what button have to be highlighted
 buttonToHighlight = None
+
+def update_leaderboard():
+    global leaderboard
+    leaderboard = bdd.get_leaderboard()  # Récupérer un leaderboard actualisé
+
 
 # Fonction pour détecter les clics sur les boutons
 def mouse_event(event, x, y, flags, param):
@@ -62,10 +67,13 @@ def mouse_event(event, x, y, flags, param):
                 print("Jouer !")
                 subprocess.Popen(["python3", "jeu.py"])
 
-            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
+            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button                
                 print("Affichage du leaderboard")
+                update_leaderboard()  # Actualise le leaderboard
                 state = "leaderboard"
-            
+                
+
+                            
             elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
                 print("Quitter...")
                 showWindow = False
@@ -142,16 +150,14 @@ def draw_main_menu(img):
     if buttonToHighlight == "Quitter":
         cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), black, 2) 
 
-leaderboard = bdd.leaderboard
+global leaderboard
 
 def draw_leaderboard(img):
-    #leaderboard menu title
-    cv2.putText(img, 'LEADERBOARD', (285, 60), cv2.FONT_HERSHEY_COMPLEX, 1, yellow, 2)
-
+    
     # Afficher les scores du leaderboard
     for i, (name, score) in enumerate(leaderboard):
-        text = f"{i + 1}. {name}: {score}"  # Afficher le rang, le nom et le score
-        cv2.putText(img, text, (xy_leaderboard[0] + 10, 170 + (i * 50)), cv2.FONT_HERSHEY_COMPLEX, 1, red, 2)    
+        text = f"{name}: {score}"  # Afficher le rang, le nom et le score
+        cv2.putText(img, text, (xy_leaderboard[0] + 30, 140 + (i * 104)), cv2.FONT_HERSHEY_COMPLEX, 1, black, 2)    
     
     #draw return button
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
@@ -164,7 +170,7 @@ def draw_leaderboard(img):
     cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), green, -1)  
     cv2.putText(img, "STATISTIQUES", (562, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Statistiques":
-            cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), black, 2)  
+        cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), black, 2)  
 
 
 def draw_stat_menu(img):

@@ -7,24 +7,17 @@ def update_leaderboard(leaderboard, name, score):
     if len(leaderboard) > 5:
         leaderboard.pop()  # Supprimer le score le plus bas si plus de 5 éléments
 
-# Initialisation du leaderboard (vide au départ)
-leaderboard = []
 
-# Envoi des scores (tu peux garder cette partie si tu envoies les scores)
-API.dweet_for("score", {"name": "theo", "score": 1})
-API.dweet_for("score", {"name": "quentin", "score": 1})
+# Fonction pour récupérer un leaderboard mis à jour
+def get_leaderboard():
+    leaderboard = []  # Réinitialiser le leaderboard
+    dico = API.get_dweets_for("score")
+    scores = API.get_data(dico)  # Récupérer les scores via l'API
 
-# Récupération des scores depuis l'API
-dico = API.get_dweets_for("score")
-#print(dico)  # Affiche la liste des dweets récupérés
-scores = API.get_data(dico)
-#print(scores)  # Affiche les données extraites (nom et score)
+    for name, score in scores:
+        update_leaderboard(leaderboard, name, score)
 
-# Mise à jour du leaderboard avec les scores récupérés
-for name, score in scores:  # On itère directement sur les tuples (name, score)
-    update_leaderboard(leaderboard, name, score)
-
-# Afficher le leaderboard (les 5 meilleurs scores)
-print("Leaderboard:", leaderboard)
+    return leaderboard
 
 # Si tu veux supprimer tous les dweets après, tu peux le faire ici
+#API.delete_all_dweets_for("score")
