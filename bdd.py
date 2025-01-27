@@ -1,5 +1,15 @@
 import API_Raspberry as API
 
+"""
+API.delete_all_dweets_for("score")
+
+
+API.dweet_for("score", {"name": "neuer", "score": 1000})
+API.dweet_for("score", {"name": "quentin", "score": 800})
+API.dweet_for("score", {"name": "theo", "score": 600})
+API.dweet_for("score", {"name": "marius", "score": 400})
+API.dweet_for("score", {"name": "tom", "score": 200})"""
+
 # Fonction pour ajouter un score et gérer le leaderboard
 def update_leaderboard(leaderboard, name, score):
     leaderboard.append((name, score))  # Ajouter le nouveau score
