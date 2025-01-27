@@ -57,11 +57,6 @@ def main():
 
     # Charger l'image des gants
     glove_img = cv2.imread("img/Gant.png", cv2.IMREAD_UNCHANGED)
-    if glove_img is None:
-        print("Erreur : Impossible de charger l'image 'gant.png'.")
-        exit()
-
-
     
     # Initialiser Mediapipe
     cap = cv2.VideoCapture(0)
@@ -75,9 +70,6 @@ def main():
 
     # Charger l'image de fond personnalisée
     background_img = cv2.imread("img/background.png")
-    if background_img is None:
-        print("Erreur : Impossible de charger l'image 'background.jpeg'.")
-        exit()
     # Redimensionner l'image de fond aux dimensions de l'écran
     background_img = cv2.resize(background_img, (screen_width, screen_height))
 
@@ -124,7 +116,7 @@ def main():
         render.clear()
         render.add_layer(caneva)
 
-        if attenteBalle > 10:
+        if attenteBalle > 5:
             render.add_layer(balle.get_graphic(), balle.update())
             balle.resize_graphic(int(RAYONMAX * taille[compt]))
             if compt < len(taille) - 1:
@@ -157,7 +149,7 @@ def main():
                 center_hand_y = int(center_hand.y * h)  # Coordonnée en pixels
 
                 # Vérifier si la balle est dans la hitbox
-                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX)) <= RAYONMAX and abs(center_hand_y - (ball_y + RAYONMAX)) <= RAYONMAX:
+                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX/2)) <= RAYONMAX and abs(center_hand_y - (ball_y + RAYONMAX/2)) <= RAYONMAX:
                     ball_stopped = True  # La balle est arrêtée
 
                 # Déterminer si la main est gauche ou droite
@@ -183,13 +175,20 @@ def main():
                 resized_alpha = resized_glove[:, :, 3] / 255.0
                 resized_glove_bgr = resized_glove[:, :, :3]
 
+                if score == 0 :
+                    overlay = output.copy()
+
+                    cv2.circle(output, (center_hand_x, center_hand_y), 200, (0, 255, 0), -1)
+                    cv2.circle(output, (int(ball_x + balle.rayon/2), int(ball_y + balle.rayon/2)), 5, (0, 0, 255), -1)
+
+                    output = cv2.addWeighted(overlay, 0.5, output, 1 - 0.5, 0)
+
                 overlay_rotated_image(output, resized_glove_bgr, cx2, cy2, angle + 90, resized_alpha)
             
 
         # Vérifier si la balle est arrêtée ou si c'est un but
         if ball_radius == 200:
             if ball_stopped:
-                print("MAIS QUEL ARRÊT !!!!!")
                 balle.resize_graphic(int(RAYONMAX * 0.1))
                 balle.pos = POSDEPART
                 attenteBalle=0
