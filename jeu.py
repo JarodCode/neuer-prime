@@ -45,6 +45,15 @@ def main():
     WIDTH, HEIGHT = 1600, 900
     MIDW, MIDH = WIDTH/2, HEIGHT/2
     GAMELOOP = True
+    GAMEOVERLOOP = True
+
+    compt = 0
+    attenteBalle = 0
+    score = 0
+
+    # buttons coordinate : [min x, max x, min y, max y]
+
+    xy_score = [0, 300, 0, 100]
 
     # Charger l'image des gants
     glove_img = cv2.imread("img/Gant.png", cv2.IMREAD_UNCHANGED)
@@ -70,7 +79,7 @@ def main():
         print("Erreur : Impossible de charger l'image 'background.jpeg'.")
         exit()
     # Redimensionner l'image de fond aux dimensions de l'écran
-    background_img = cv2.resize(background_img, (screen_width - 55, screen_height - 105 ))
+    background_img = cv2.resize(background_img, (screen_width, screen_height))
 
 
     myTir = Tir()
@@ -100,9 +109,6 @@ def main():
 
     nbFrame = np.shape(myTir.traj)
     taille = np.linspace(0.1, 1, nbFrame[1])
-    compt = 0
-    attenteBalle = 0
-    score = 0
 
     while GAMELOOP:
         # Capture de l'image de la webcam
@@ -127,6 +133,10 @@ def main():
             render.add_layer(balle.get_graphic(), POSDEPART)
 
         output = render.get_image()
+
+        cv2.rectangle(output, (xy_score[0], xy_score[2]), (xy_score[1], xy_score[3]), (169, 169, 169) , -1)  
+        cv2.putText(output, "SCORE : " + str(score), (35, 60), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+
 
         # Variables pour vérifier si la balle est arrêtée
         ball_x, ball_y = balle.pos
@@ -196,10 +206,10 @@ def main():
                     myTir.direct()
                 balle.traj = myTir.traj
             else:
-                print("ET C'EST LE BUUUUUUT!!!!!!")
-                print(score)
                 GAMELOOP = False
 
+        cv2.namedWindow("Resultat", cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty("Resultat", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow("Resultat", output)
 
         key = cv2.waitKey(EPSILON) & 0xFF
@@ -210,6 +220,20 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
+    while GAMEOVERLOOP:
+        # Afficher l'écran de Game Over
+        img_gameover_path = "img/gameOver.jpg"
+        gameover = cv2.imread(img_gameover_path)
+        gameover = cv2.resize(gameover, (screen_width, screen_height))
+        cv2.namedWindow("Game Over", cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty("Game Over", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow("Game Over", gameover)
+        key = cv2.waitKey(EPSILON) & 0xFF
+        if key == ord('q') or key == 27:
+            GAMEOVERLOOP = False
+        
+
 
 
 if __name__ == "__main__":
