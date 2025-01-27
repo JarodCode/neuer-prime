@@ -41,8 +41,13 @@ def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
 
 
 def main():
+    # Récupérer les dimensions de l'écran principal
+    monitor = get_monitors()[0]
+    screen_width = monitor.width 
+    screen_height = monitor.height
+
     EPSILON = 1
-    WIDTH, HEIGHT = 1600, 900
+    WIDTH, HEIGHT = screen_width, screen_height
     MIDW, MIDH = WIDTH/2, HEIGHT/2
     GAMELOOP = True
     GAMEOVERLOOP = True
@@ -62,11 +67,6 @@ def main():
     cap = cv2.VideoCapture(0)
     mpHands = mp.solutions.hands
     Hands = mpHands.Hands(static_image_mode=False, max_num_hands=2, model_complexity=1)
-
-    # Récupérer les dimensions de l'écran principal
-    monitor = get_monitors()[0]
-    screen_width = monitor.width 
-    screen_height = monitor.height
 
     # Charger l'image de fond personnalisée
     background_img = cv2.imread("img/background.png")
