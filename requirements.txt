@@ -2,3 +2,10 @@ opencv-python
 mediapipe
 numpy
 screeninfo
+json
+time
+requests
+API_raspberry
+math
+subprocess
+scipy

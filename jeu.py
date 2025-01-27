@@ -2,12 +2,11 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import math
+import API_Raspberry as API
 from screeninfo import get_monitors
-from Graphics import Graphic, SceneRender
+from Graphics import SceneRender
 from Tir import Tir
 from Ballon import Ballon
-import subprocess
-import API_Raspberry as API
 
 def overlay_rotated_image(background, overlay, x, y, angle, alpha_mask):
     """Superpose une image avec rotation et transparence sur une autre image."""
