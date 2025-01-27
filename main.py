@@ -83,15 +83,7 @@ def mouse_event(event, x, y, flags, param):
             if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
                 print("Retour au menu principal")
                 state = "main_menu"
-            if xy_stat_lbd[0] <= x <= xy_stat_lbd[1] and xy_stat_lbd[2] <= y <= xy_stat_lbd[3]:     #"statistiques" button
-                print("Affichage des statistiques")
-                state = "statistiques"
 
-        #if in "statistiques" 
-        elif state == "statistiques" : 
-            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
-                print("Retour au leaderboard")
-                state = "leaderboard"
     
     #to follow mouse movement and to change the button to highlight
     elif event == cv2.EVENT_MOUSEMOVE:
@@ -113,19 +105,9 @@ def mouse_event(event, x, y, flags, param):
         elif state == "leaderboard" : 
             if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
                 buttonToHighlight = "Retour"
-            elif xy_stat_lbd[0] <= x <= xy_stat_lbd[1] and xy_stat_lbd[2] <= y <= xy_stat_lbd[3]:     #"statistiques" button
-                buttonToHighlight = "Statistiques"
             else : #no buton to highlight
                 buttonToHighlight = None
 
-        #if in "statistiques" 
-        elif state == "statistiques" : 
-            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
-                buttonToHighlight = "Retour2"
-            else : #no buton to highlight
-                buttonToHighlight = None
-
-       
 
 # Ajouter les boutons par-dessus l'image de fond
 def draw_main_menu(img):    
@@ -164,26 +146,7 @@ def draw_leaderboard(img):
     cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Retour":
         cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), black, 2)  
-
-
-    #draw "statistique" button
-    cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), green, -1)  
-    cv2.putText(img, "STATISTIQUES", (562, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
-    if buttonToHighlight == "Statistiques":
-        cv2.rectangle(img, (xy_stat_lbd[0], xy_stat_lbd[2]), (xy_stat_lbd[1], xy_stat_lbd[3]), black, 2)  
-
-
-def draw_stat_menu(img):
-    # title
-    cv2.putText(img, 'STATISTIQUES', (283, 60), cv2.FONT_HERSHEY_COMPLEX, 1, yellow, 2)
-
-    #draw return button
-    cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
-    cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
-    if buttonToHighlight == "Retour2":
-            cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), black, 2)  
-
-
+ 
 
 # Affichage du menu
 cv2.namedWindow("Neuer Prime")
@@ -203,10 +166,6 @@ while showWindow:
 
     elif state == "leaderboard":
         draw_leaderboard(lbd_menu)
-        cv2.imshow("Neuer Prime", lbd_menu)
-
-    elif state == "statistiques":
-        draw_stat_menu(lbd_menu)
         cv2.imshow("Neuer Prime", lbd_menu)
 
     # Attendre une touche pour quitter
