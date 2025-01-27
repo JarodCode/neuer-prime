@@ -147,26 +147,21 @@ def main():
             for hand_index, handLms in enumerate(result.multi_hand_landmarks):
                 h, w, c = img.shape
 
-                # Récupérer les coordonnées des landmarks de la main
-                landmark_positions = [(int(lm.x * w), int(lm.y * h)) for lm in handLms.landmark]
+                # Points clés de la main
+                wrist = handLms.landmark[0]
+                center_hand = handLms.landmark[9]
 
-                # Déterminer les bornes de la hitbox (rectangle englobant)
-                x_min = min([pos[0] for pos in landmark_positions])
-                y_min = min([pos[1] for pos in landmark_positions])
-                x_max = max([pos[0] for pos in landmark_positions])
-                y_max = max([pos[1] for pos in landmark_positions])
+                # Extraire les coordonnées x et y de center_hand
+                center_hand_x = int(center_hand.x * w)  # Coordonnée en pixels
+                center_hand_y = int(center_hand.y * h)  # Coordonnée en pixels
 
                 # Vérifier si la balle est dans la hitbox
-                if ball_radius == 200 and x_min <= ball_x <= x_max and y_min <= ball_y <= y_max:
+                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX)) <= 200 and abs(center_hand_y - (ball_y + RAYONMAX)) <= 200:
                     ball_stopped = True  # La balle est arrêtée
 
                 # Déterminer si la main est gauche ou droite
                 handedness = result.multi_handedness[hand_index].classification[0].label
                 is_right_hand = handedness == "Right"
-
-                # Points clés de la main
-                wrist = handLms.landmark[0]
-                center_hand = handLms.landmark[9]
 
                 # Coordonnées des points
                 cx1, cy1 = int(wrist.x * w), int(wrist.y * h)
@@ -177,7 +172,7 @@ def main():
 
                 # Redimensionner les gants
                 glove_h, glove_w = glove_img.shape[:2]
-                new_width = int(w * 0.4)
+                new_width = int(w * 0.25)
                 new_height = int(new_width * glove_h / glove_w)
                 resized_glove = cv2.resize(glove_img, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
