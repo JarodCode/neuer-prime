@@ -87,7 +87,7 @@ def main():
     # Création du ballon
     balle = Ballon(sprite="img/Ballon.png",
                    idPos=0,
-                   pos=(MIDW, MIDH-100),
+                   pos=(MIDW, MIDH + 100),
                    traj=myTir.traj,
                    rayon=200,
                    enContactGant=False)
@@ -106,28 +106,19 @@ def main():
 
     while GAMELOOP:
         # Capture de l'image de la webcam
-        success, img = cap.read()
-        if not success:
-            print("Erreur : Impossible de lire l'image depuis la webcam.")
-            break
+        _, img = cap.read()
 
         img = cv2.resize(img, (screen_width, screen_height))
         img = cv2.flip(img, 1)
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         result = Hands.process(imgRGB)
 
-        #aaaa
-        # Création du canevas de base
-        #caneva = Graphic((screen_width, screen_height))
-        #caneva.fill((50, 205, 50))  # Fond vert (pelouse)
-
-        # Créer une copie de l'image de fond pour servir de canevas
         caneva = background_img.copy()        
 
         render.clear()
         render.add_layer(caneva)
 
-        if attenteBalle > 25:
+        if attenteBalle > 10:
             render.add_layer(balle.get_graphic(), balle.update())
             balle.resize_graphic(int(RAYONMAX * taille[compt]))
             if compt < len(taille) - 1:
@@ -156,7 +147,7 @@ def main():
                 center_hand_y = int(center_hand.y * h)  # Coordonnée en pixels
 
                 # Vérifier si la balle est dans la hitbox
-                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX)) <= 200 and abs(center_hand_y - (ball_y + RAYONMAX)) <= 200:
+                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX)) <= RAYONMAX and abs(center_hand_y - (ball_y + RAYONMAX)) <= RAYONMAX:
                     ball_stopped = True  # La balle est arrêtée
 
                 # Déterminer si la main est gauche ou droite

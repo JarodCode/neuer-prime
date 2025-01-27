@@ -13,7 +13,7 @@ class Tir :
     def __init__(self):
         self.traj = np.zeros([2, 50])
 
-    coDepart = np.array([MIDW, MIDH-100])
+    coDepart = np.array([MIDW, MIDH + 100])
 
     def panenkaDroite(self):
         coArriveePanenka = np.array([np.random.uniform(MIDW , WIDTHR), np.random.uniform(RAYON, RAYON+50)])
