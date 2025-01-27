@@ -22,7 +22,8 @@ yellow = (0, 215, 255)    # Jaune doré (Gold), lumineux et accrocheur
 
 #buttons coordinates : [min x, max x, min y, max y]
 #main menu
-xy_jouer = [300, 500, 100, 160]
+xy_jouer_enligne = [50, 380, 100, 160]
+xy_jouer_horsligne = [420, 790, 100, 160]
 xy_leaderboard = [250, 550, 200, 260]
 xy_quitter = [300, 500, 300, 360]
 #leaderboard menu
@@ -58,9 +59,13 @@ def mouse_event(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         #if in main menu
         if state == "main_menu":
-            if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
+            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:  # "Jouer" button
                 print("Jouer !")
                 subprocess.Popen(["python3", "jeu.py"])
+
+            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:  # "Jouer" button
+                print("Jouer !")
+                # subprocess.Popen(["python3", "jeu.py"])
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
                 print("Affichage du leaderboard")
@@ -89,8 +94,11 @@ def mouse_event(event, x, y, flags, param):
     elif event == cv2.EVENT_MOUSEMOVE:
         #if in main menu
         if state == "main_menu":
-            if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
-                buttonToHighlight = "Jouer"                
+            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:  # "Jouer" button
+                buttonToHighlight = "Jouer en Ligne"
+
+            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:  # "Jouer" button
+                buttonToHighlight = "Jouer hors Ligne"              
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
                 buttonToHighlight = "Leaderboard"
@@ -123,12 +131,16 @@ def mouse_event(event, x, y, flags, param):
 def draw_main_menu(img):    
     
     # Dessiner le bouton "Jouer"
-    cv2.rectangle(img, (xy_jouer[0], xy_jouer[2]), (xy_jouer[1], xy_jouer[3]), blue, -1)  
-    cv2.putText(img, "JOUER", (350, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
-    if buttonToHighlight == "Jouer":
-            cv2.rectangle(img, (xy_jouer[0], xy_jouer[2]), (xy_jouer[1], xy_jouer[3]), black, 2)  
+    cv2.rectangle(img, (xy_jouer_enligne[0], xy_jouer_enligne[2]), (xy_jouer_enligne[1], xy_jouer_enligne[3]), blue, -1)  
+    cv2.putText(img, "JOUER EN LIGNE", (75, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Jouer en Ligne":
+            cv2.rectangle(img, (xy_jouer_enligne[0], xy_jouer_enligne[2]), (xy_jouer_enligne[1], xy_jouer_enligne[3]), black, 2)
     
-
+    cv2.rectangle(img, (xy_jouer_horsligne[0], xy_jouer_horsligne[2]), (xy_jouer_horsligne[1], xy_jouer_horsligne[3]), blue, -1)  
+    cv2.putText(img, "JOUER HORS LIGNE", (450, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
+    if buttonToHighlight == "Jouer hors Ligne":
+            cv2.rectangle(img, (xy_jouer_horsligne[0], xy_jouer_horsligne[2]), (xy_jouer_horsligne[1], xy_jouer_horsligne[3]), black, 2)  
+    
     # Dessiner le bouton "Leaderboard"
     cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), orange, -1)  
     cv2.putText(img, "LEADERBOARD", (285, 240), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
