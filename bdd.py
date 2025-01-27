@@ -32,4 +32,3 @@ def get_leaderboard():
 # Si tu veux supprimer tous les dweets après, tu peux le faire ici
 #API.delete_all_dweets_for("score")
 
-print(get_leaderboard())
