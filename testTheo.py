@@ -95,7 +95,6 @@ def main():
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         result = Hands.process(imgRGB)
 
-        #aaaa
         # Création du canevas de base
         caneva = Graphic((screen_width, screen_height))
         caneva.fill((50, 205, 50))  # Fond vert (pelouse)
@@ -132,17 +131,21 @@ def main():
                 x_max = max([pos[0] for pos in landmark_positions])
                 y_max = max([pos[1] for pos in landmark_positions])
 
+                # Points clés de la main
+                wrist = handLms.landmark[0]
+                center_hand = handLms.landmark[9]
+
+                # Extraire les coordonnées x et y de center_hand
+                center_hand_x = int(center_hand.x * w)  # Coordonnée en pixels
+                center_hand_y = int(center_hand.y * h)  # Coordonnée en pixels
+
                 # Vérifier si la balle est dans la hitbox
-                if ball_radius == 200 and x_min <= ball_x <= x_max and y_min <= ball_y <= y_max:
+                if ball_radius == 200 and abs(center_hand_x - (ball_x + RAYONMAX)) <= 200 and abs(center_hand_y - (ball_y + RAYONMAX)) <= 200:
                     ball_stopped = True  # La balle est arrêtée
 
                 # Déterminer si la main est gauche ou droite
                 handedness = result.multi_handedness[hand_index].classification[0].label
                 is_right_hand = handedness == "Right"
-
-                # Points clés de la main
-                wrist = handLms.landmark[0]
-                center_hand = handLms.landmark[9]
 
                 # Coordonnées des points
                 cx1, cy1 = int(wrist.x * w), int(wrist.y * h)
