@@ -65,28 +65,21 @@ def mouse_event(event, x, y, flags, param):
         #if in main menu
         if state == "main_menu":
             if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:  # "Jouer" button
-                print("Jouer !")
                 subprocess.Popen(["python3", "jeu.py"])
 
             elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:  # "Jouer" button
-                print("Jouer !")
-                # subprocess.Popen(["python3", "jeu.py"])
+                subprocess.Popen(["python3", "jeuHorsLigne.py"])
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
-                print("Affichage du leaderboard")
                 update_leaderboard()  # Actualise le leaderboard
                 state = "leaderboard"
-                
-
                             
             elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
-                print("Quitter...")
                 showWindow = False
         
         #if in leaderboard 
         elif state == "leaderboard" : 
             if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
-                print("Retour au menu principal")
                 state = "main_menu"
 
     
