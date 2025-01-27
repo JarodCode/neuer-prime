@@ -45,6 +45,7 @@ def main():
     WIDTH, HEIGHT = 1600, 900
     MIDW, MIDH = WIDTH/2, HEIGHT/2
     GAMELOOP = True
+    GAMEOVERLOOP = True
 
     compt = 0
     attenteBalle = 0
@@ -78,7 +79,7 @@ def main():
         print("Erreur : Impossible de charger l'image 'background.jpeg'.")
         exit()
     # Redimensionner l'image de fond aux dimensions de l'écran
-    background_img = cv2.resize(background_img, (screen_width - 55, screen_height - 105 ))
+    background_img = cv2.resize(background_img, (screen_width, screen_height))
 
 
     myTir = Tir()
@@ -205,17 +206,10 @@ def main():
                     myTir.direct()
                 balle.traj = myTir.traj
             else:
-                # Afficher l'écran de Game Over
-                img_gameover_path = "img/gameOver.jpg"
-                gameover = cv2.imread(img_gameover_path)
-                if gameover is None:
-                    print("Erreur : Impossible de charger l'image 'gameOver.jpg'.")
-                    break  # Quitte la boucle principale si l'image n'existe pas
+                GAMELOOP = False
 
-                gameover = cv2.resize(gameover, (screen_width, screen_height))
-                cv2.imshow("Game Over", gameover)
-
-
+        cv2.namedWindow("Resultat", cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty("Resultat", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow("Resultat", output)
 
         key = cv2.waitKey(EPSILON) & 0xFF
@@ -226,6 +220,20 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
+    while GAMEOVERLOOP:
+        # Afficher l'écran de Game Over
+        img_gameover_path = "img/gameOver.jpg"
+        gameover = cv2.imread(img_gameover_path)
+        gameover = cv2.resize(gameover, (screen_width, screen_height))
+        cv2.namedWindow("Game Over", cv2.WND_PROP_FULLSCREEN)
+        cv2.setWindowProperty("Game Over", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow("Game Over", gameover)
+        key = cv2.waitKey(EPSILON) & 0xFF
+        if key == ord('q') or key == 27:
+            GAMEOVERLOOP = False
+        
+
 
 
 if __name__ == "__main__":
