@@ -122,15 +122,6 @@ def main():
             for hand_index, handLms in enumerate(result.multi_hand_landmarks):
                 h, w, c = img.shape
 
-                # Récupérer les coordonnées des landmarks de la main
-                landmark_positions = [(int(lm.x * w), int(lm.y * h)) for lm in handLms.landmark]
-
-                # Déterminer les bornes de la hitbox (rectangle englobant)
-                x_min = min([pos[0] for pos in landmark_positions])
-                y_min = min([pos[1] for pos in landmark_positions])
-                x_max = max([pos[0] for pos in landmark_positions])
-                y_max = max([pos[1] for pos in landmark_positions])
-
                 # Points clés de la main
                 wrist = handLms.landmark[0]
                 center_hand = handLms.landmark[9]
