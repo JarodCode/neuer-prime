@@ -60,7 +60,7 @@ def mouse_event(event, x, y, flags, param):
         if state == "main_menu":
             if xy_jouer[0] <= x <= xy_jouer[1] and xy_jouer[2] <= y <= xy_jouer[3]:  # "Jouer" button
                 print("Jouer !")
-                subprocess.Popen(["python3", "testTheo.py"])
+                subprocess.Popen(["python3", "jeu.py"])
 
             elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
                 print("Affichage du leaderboard")
