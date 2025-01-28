@@ -12,7 +12,7 @@ screen_height = monitor.height
 
 WIDTH, HEIGHT = screen_width, screen_height
 MIDW, MIDH = WIDTH/2, HEIGHT/2
-WIDTHR, HEIGHTR = WIDTH - 50, HEIGHT - 50
+WIDTHR, HEIGHTR = WIDTH - 250, HEIGHT - 250
 RADIUS = 100
 traj = np.zeros([3, 25])
 
@@ -32,7 +32,7 @@ class Shoot :
     # This trajectory is a straight line between start and end points
 
     def direct(self):
-        coStartDirect = np.array([np.random.uniform(RADIUS, WIDTHR), np.random.uniform(RADIUS, HEIGHTR)])
+        coStartDirect = np.array([np.random.uniform(50, WIDTHR), np.random.uniform(RADIUS, HEIGHTR)])
  
         traj[0, :] = np.linspace(self.coStart[0], coStartDirect[0], traj.shape[1])
         traj[1, :] = np.linspace(self.coStart[1], coStartDirect[1], traj.shape[1])
@@ -82,7 +82,7 @@ class Shoot :
     # the third point y co is the middle of the segment between the 2 points + an int in (70, 80)
 
     def effectLeft(self):
-        coEndEffectLeft = np.array([np.random.uniform(WIDTHR - 200 , WIDTHR), np.random.uniform(RADIUS, HEIGHTR)])
+        coEndEffectLeft = np.array([np.random.uniform(WIDTHR - 100 , WIDTHR - 0), np.random.uniform(RADIUS, HEIGHTR)])
 
         interpX = [self.coStart[0], (self.coStart[0] + coEndEffectLeft[0])/2 + np.random.uniform(95, 105), coEndEffectLeft[0]]
         interpY = [self.coStart[1], (self.coStart[1] + coEndEffectLeft[1])/2 + np.random.uniform(70, 80), coEndEffectLeft[1]]
@@ -96,7 +96,7 @@ class Shoot :
 
 
     def effectRight(self):
-        coEndEffectRight = np.array([np.random.uniform(WIDTHR - 200 , WIDTHR), np.random.uniform(RADIUS, HEIGHTR)])
+        coEndEffectRight = np.array([np.random.uniform(WIDTHR - 200 , WIDTHR - 100), np.random.uniform(RADIUS, HEIGHTR)])
 
         interpX = [self.coStart[0], (self.coStart[0] + coEndEffectRight[0])/2 + np.random.uniform(95, 105), coEndEffectRight[0]]
         interpY = [self.coStart[1], (self.coStart[1] + coEndEffectRight[1])/2 + np.random.uniform(70, 80), coEndEffectRight[1]]
