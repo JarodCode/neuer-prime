@@ -1,33 +1,35 @@
-# stdlib imports
 import json
 import time
 import requests
 
-
 # base url for all requests
-# Think about modifying the URL to use Raspberry IP address and Raspberry open port
-BASE_URL = "http://10.111.4.33:3000"
-# Something like: "http://192.168.12.83:3000"
+# ID Raspberry : 11
+# IP Raspberry : 10:111.4.33
+# port Raspberry : 3069
 
+BASE_URL = "http://10.111.4.33:3000"
 
 class DweepyError(Exception):
     pass
 
-
 def _request(method, url, session=None, **kwargs):
-    """Make HTTP request, raising an exception if it fails.
-    """
+    # Make HTTP request, raising an exception if it fails
+
     url = BASE_URL + url
 
     if session:
         request_func = getattr(session, method)
     else:
         request_func = getattr(requests, method)
+
     response = request_func(url, **kwargs)
+
     # raise an exception if request is not successful
+
     if not response.status_code == requests.codes.ok:
         raise DweepyError('HTTP {0} response'.format(response.status_code))
     response_json = response.json()
+
     if "this" in response_json: # Original Dweet method
         if response_json['this'] == 'failed':
             raise DweepyError(response_json['because'])
@@ -37,16 +39,16 @@ def _request(method, url, session=None, **kwargs):
 
 
 def _send_dweet(payload, url, params=None, session=None):
-    """Send a dweet to dweet.io
-    """
+    # Send a dweet to dweet.io
+
     data = json.dumps(payload)
     headers = {'Content-type': 'application/json'}
     return _request('post', url, data=data, headers=headers, params=params, session=session)
 
 
 def dweet_for(thing_name, payload, key=None, session=None):
-    """Send a dweet to dweet.io for a thing with a known name
-    """
+    # Send a dweet to dweet.io for a thing with a known name
+
     if key is not None:
         params = {'key': key}
     else:
@@ -54,8 +56,8 @@ def dweet_for(thing_name, payload, key=None, session=None):
     return _send_dweet(payload, '/dweet/for/{0}'.format(thing_name), params=params, session=session)
 
 def dweet_multiple_for(thing_name, payload, key=None, session=None):
-    """Send a dweet to dweet.io for a thing with a known name
-    """
+    # Send a dweet to dweet.io for a thing with a known name
+
     if key is not None:
         params = {'key': key}
     else:
@@ -63,8 +65,8 @@ def dweet_multiple_for(thing_name, payload, key=None, session=None):
     return _send_dweet(payload, '/dweet/multiple/for/{0}'.format(thing_name), params=params, session=session)
 
 def get_dweets_for(thing_name):
-    """Get all the dweets for a dweeter
-    """
+    # Get all the dweets for a dweeter
+
     res = _request('get', '/get/dweets/for/{0}'.format(thing_name), params=None, session=None)["dweets"]
     return [{**r, "content": json.loads(r["content"])} for r in res]
 
@@ -72,8 +74,8 @@ def get_data(data):
     return [(item['content']['name'], item['content']['score']) for item in data]
 
 def get_latest_dweet_for(thing_name, key=None, session=None):
-    """Read the latest dweet for a dweeter
-    """
+    # Read the latest dweet for a dweeter
+
     if key is not None:
         params = {'key': key}
     else:
@@ -82,8 +84,8 @@ def get_latest_dweet_for(thing_name, key=None, session=None):
 
 
 def delete_all_dweets_for(thing_name):
-    """Delete all the dweets for a dweeter
-    """
+    # Delete all the dweets for a dweeter
+    
     return _request('delete', '/delete/dweets/for/{0}'.format(thing_name), params=None, session=None)
 
 

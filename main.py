@@ -1,32 +1,37 @@
 import cv2
 import subprocess
-import bdd
+import dataBase
 
-# Couleurs
-white = (255, 255, 255)   # Blanc classique pour le texte ou le fond
-black = (0, 0, 0)         # Noir pour les contours ou le texte contrasté
-blue = (180, 130, 70)     # Bleu acier (Steel Blue), doux et agréable
-red = (60, 20, 220)       # Rouge cramoisi (Crimson), vibrant mais pas agressif
-green = (50, 205, 50)     # Vert citron vert (Lime Green), vif et rafraîchissant
-orange = (0, 165, 255)    # Orange vif, énergique et engageant
-purple = (219, 112, 147)  # Violet moyen (Medium Purple), chic et subtil
-gray = (169, 169, 169)    # Gris foncé (Dark Gray), neutre et élégant
-cyan = (255, 255, 0)      # Cyan vif, pour des éléments dynamiques
-yellow = (0, 215, 255)    # Jaune doré (Gold), lumineux et accrocheur
+# Colors
+
+black = (0, 0, 0)
+blue = (180, 130, 70)
+red = (60, 20, 220)
+green = (50, 205, 50)
+orange = (0, 165, 255)
+purple = (219, 112, 147)
+gray = (169, 169, 169) 
+cyan = (255, 255, 0)      
 
 #buttons coordinates : [min x, max x, min y, max y]
+
 #main menu
+
 xy_jouer_enligne = [50, 380, 100, 160]
 xy_jouer_horsligne = [420, 790, 100, 160]
 xy_leaderboard = [250, 550, 200, 260]
 xy_quitter = [300, 500, 300, 360]
+
 #leaderboard menu
+
 xy_retour_lbd = [0, 200, 540, 600]
 xy_stat_lbd = [550, 800, 540, 600]
 
-window_width, window_height = 800, 600  # Taille de la fenêtre
+# Window size
 
-#backgrounds (main menu, "statistiques" and leaderboard menus)
+window_width, window_height = 800, 600 
+
+# backgrounds
 img_main_path = "img/fond_main3.jpg"
 background_main = cv2.imread(img_main_path)
 background_main = cv2.resize(background_main, (window_width, window_height))
@@ -35,79 +40,123 @@ img_lbd_path = "img/fond_ldb.jpg"
 background_lbd = cv2.imread(img_lbd_path)
 background_lbd = cv2.resize(background_lbd, (window_width, window_height))
 
-#main while (show menu)
+# Main while (show menu)
+
 showWindow = False
 
-#initial state
+# Initial state
 state = "main_menu"
 
-#what button have to be highlighted
+# Init variable that inidcate which button to highlight
 buttonToHighlight = None
+
+# update the leaderboard 
 
 def update_leaderboard():
     global leaderboard
-    leaderboard = bdd.get_leaderboard()  # Récupérer un leaderboard actualisé
+    leaderboard = dataBase.get_leaderboard()
 
 
-# Fonction pour détecter les clics sur les boutons
+# Detect clicks on button
+
 def mouse_event(event, x, y, flags, param):
     global buttonToHighlight
-    global state  # Déclare que vous utilisez la variable globale "state"
+    global state
     global showWindow
-    #left click
+    
+    # if the left click is pressed 
+
     if event == cv2.EVENT_LBUTTONDOWN:
-        #if in main menu
+
+        # if the click has been made in the main menu
+
         if state == "main_menu":
-            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:  # "Jouer" button
-                subprocess.Popen(["python3", "jeu.py"])
 
-            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:  # "Jouer" button
-                subprocess.Popen(["python3", "jeuHorsLigne.py"])
+            # if the click has been made inside the button "Jouer en ligne", start an online game
 
-            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
-                update_leaderboard()  # Actualise le leaderboard
+            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:
+                subprocess.Popen(["python3", "onlineGame.py"])
+
+            # if the click has been made inside the button "Jouer hors ligne", start a local game
+
+            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:
+                subprocess.Popen(["python3", "localGame.py"])
+            
+            # if the click has been made inside the button "Leaderboard", shwo the leaderboard
+
+            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]:
+                update_leaderboard()
                 state = "leaderboard"
+            
+            # if the click has been made inside the button "Quitter", close the game 
                             
-            elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
+            elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:
                 showWindow = False
         
-        #if in leaderboard 
+        # if the click has been made in the leaderboard menu
+        
         elif state == "leaderboard" : 
-            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
+
+            # if the click has been made inside the button "Retour", return to main menu 
+
+            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:
                 state = "main_menu"
 
     
-    #to follow mouse movement and to change the button to highlight
+    # Follow mouse movement and to change the button highlights
+
     elif event == cv2.EVENT_MOUSEMOVE:
-        #if in main menu
+
+        # if in main menu
+
         if state == "main_menu":
-            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:  # "Jouer" button
+            
+            # if the mouse is on the button "Jouer en ligne", highlight the button
+
+            if xy_jouer_enligne[0] <= x <= xy_jouer_enligne[1] and xy_jouer_enligne[2] <= y <= xy_jouer_enligne[3]:
                 buttonToHighlight = "Jouer en Ligne"
+            
+            # if the mouse is on the button "Jouer hors ligne", highlight the button
 
-            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:  # "Jouer" button
-                buttonToHighlight = "Jouer hors Ligne"              
+            elif xy_jouer_horsligne[0] <= x <= xy_jouer_horsligne[1] and xy_jouer_horsligne[2] <= y <= xy_jouer_horsligne[3]:
+                buttonToHighlight = "Jouer hors Ligne"
+            
+            # if the mouse is on the button "Leaderboard", highlight the button     
 
-            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]: # "Leaderboard" button
+            elif xy_leaderboard[0] <= x <= xy_leaderboard[1] and xy_leaderboard[2] <= y <= xy_leaderboard[3]:
                 buttonToHighlight = "Leaderboard"
             
-            elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:  # "Quitter" button
+            # if the mouse is on the button "Quitter", highlight the button
+            
+            elif xy_quitter[0] <= x <= xy_quitter[1] and xy_quitter[2] <= y <= xy_quitter[3]:
                 buttonToHighlight = "Quitter"
 
-            else : #no buton to highlight
+            # if the mouse is not on a button, no button is highlighted
+
+            else: 
                 buttonToHighlight = None
         
-        #if in leaderboard 
+        # if in leaderboard 
+
         elif state == "leaderboard" : 
-            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:     #back button
+            
+            # if the mouse is on the button "Retour", highlight the button
+
+            if xy_retour_lbd[0] <= x <= xy_retour_lbd[1] and xy_retour_lbd[2] <= y <= xy_retour_lbd[3]:
                 buttonToHighlight = "Retour"
-            else : #no buton to highlight
+            
+            # if the mouse is not on a button, no button is highlighted
+
+            else:
                 buttonToHighlight = None
 
 
-# Ajouter les boutons par-dessus l'image de fond
+# Add button on the background in the main menu
+
 def draw_main_menu(img):    
     
-    # Dessiner le bouton "Jouer"
+    # Display "Jouer" button
+
     cv2.rectangle(img, (xy_jouer_enligne[0], xy_jouer_enligne[2]), (xy_jouer_enligne[1], xy_jouer_enligne[3]), blue, -1)  
     cv2.putText(img, "JOUER EN LIGNE", (75, 140), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Jouer en Ligne":
@@ -118,14 +167,16 @@ def draw_main_menu(img):
     if buttonToHighlight == "Jouer hors Ligne":
             cv2.rectangle(img, (xy_jouer_horsligne[0], xy_jouer_horsligne[2]), (xy_jouer_horsligne[1], xy_jouer_horsligne[3]), black, 2)  
     
-    # Dessiner le bouton "Leaderboard"
+    # Display "Leaderboard" button
+
     cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), orange, -1)  
     cv2.putText(img, "LEADERBOARD", (285, 240), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Leaderboard":
             cv2.rectangle(img, (xy_leaderboard[0], xy_leaderboard[2]), (xy_leaderboard[1], xy_leaderboard[3]), black, 2)  
 
 
-    # Dessiner le bouton "Quitter"
+    # Display "Quitter" button 
+
     cv2.rectangle(img, (xy_quitter[0], xy_quitter[2]), (xy_quitter[1], xy_quitter[3]), red, -1) 
     cv2.putText(img, "QUITTER", (332, 340), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Quitter":
@@ -133,32 +184,41 @@ def draw_main_menu(img):
 
 global leaderboard
 
+# Add button on the background in the leaderboard menu
+
 def draw_leaderboard(img):
     
-    # Afficher les scores du leaderboard
+    # Display leaderbord scores
+
     for i, (name, score) in enumerate(leaderboard):
-        text = f"{name}: {score}"  # Afficher le rang, le nom et le score
+        text = f"{name}: {score}"
         cv2.putText(img, text, (xy_leaderboard[0] + 30, 140 + (i * 104)), cv2.FONT_HERSHEY_COMPLEX, 1, black, 2)    
     
-    #draw return button
+    # Display "Retout" button
+
     cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), gray, -1)  
     cv2.putText(img, "RETOUR", (35, 580), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 2)
     if buttonToHighlight == "Retour":
         cv2.rectangle(img, (xy_retour_lbd[0], xy_retour_lbd[2]), (xy_retour_lbd[1], xy_retour_lbd[3]), black, 2)  
  
 
-# Affichage du menu
+# Display the menu
+
 cv2.namedWindow("Neuer Prime")
 cv2.setMouseCallback("Neuer Prime", mouse_event)
 
 showWindow = True
+
+# if showWindow = True then the menu is on the screen
+
 while showWindow:
 
-    # Créer une copie de la frame pour chaque itération
+    # Create a copy at each iteration
+
     main_menu = background_main.copy()
     lbd_menu = background_lbd.copy()
 
-    #draw buttons 
+    # Draw buttons 
     if state == "main_menu":
         draw_main_menu(main_menu)
         cv2.imshow("Neuer Prime", main_menu)
@@ -167,7 +227,7 @@ while showWindow:
         draw_leaderboard(lbd_menu)
         cv2.imshow("Neuer Prime", lbd_menu)
 
-    # Attendre une touche pour quitter
-    if cv2.waitKey(100) & 0xFF == 27:  # Touche Échap, 100 ms pour changer de frame
-        break
+    # Wait fot "Escp" to be pressed to close the menu
+    if cv2.waitKey(100) & 0xFF == 27:
+        showWindow = False
 
